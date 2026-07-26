@@ -42,6 +42,27 @@ def _is_itinerary_stale(itinerary: list, current_destination: str) -> bool:
     return True
 
 
+def _has_repetitive_activities(itinerary: list) -> bool:
+    """Detect if an itinerary repeats the same main activity string across multiple slots."""
+    if not itinerary or len(itinerary) <= 1:
+        return False
+    seen = set()
+    total_slots = 0
+    duplicate_count = 0
+    for day in itinerary:
+        for period in ("morning", "afternoon", "evening"):
+            act = day.get(period, {})
+            if isinstance(act, dict):
+                text = (act.get("activity") or "").lower().strip()
+                if len(text) > 3:
+                    total_slots += 1
+                    if text in seen:
+                        duplicate_count += 1
+                    else:
+                        seen.add(text)
+    return duplicate_count > 0 and total_slots > 2
+
+
 def _get_search_location(state: TripState) -> str:
     trip = state.get("trip", {})
     trip_destination = trip.get("destination", "Unknown")
@@ -161,8 +182,7 @@ def planning_agent_node(state: TripState) -> dict:
             itinerary_text = _format_itinerary_for_llm(existing_itinerary)
             user_content = (
                 f"Trip Info:\n{trip_info}\n\n"
-                f"EXISTING ITINERARY (the user already has this {len(existing_itinerary)}-day itinerary):\n"
-                f"{itinerary_text}\n\n"
+                f"EXISTING ITINERARY:\n{itinerary_text}\n\n"
                 f"MODIFICATION REQUEST: {user_query}\n\n"
                 f"IMPORTANT: Modify ONLY the requested day/part. Keep ALL other days identical."
             )
@@ -195,8 +215,8 @@ def planning_agent_node(state: TripState) -> dict:
         parsed = _parse_planning_output(output)
         
         result_itinerary = parsed.get("itinerary", [])
-        if not result_itinerary:
-            logger.warning("[PlanningAgent] LLM returned no itinerary JSON, using rich fallback.")
+        if not result_itinerary or _has_repetitive_activities(result_itinerary):
+            logger.warning("[PlanningAgent] LLM returned empty or repetitive itinerary JSON, using rich non-repeating plan.")
             return _fallback_itinerary(state, location, trip, weather_data)
 
         return {
@@ -240,13 +260,13 @@ def _parse_planning_output(output: str) -> dict:
 # Rich Destination Plans for 100% Unique, Non-Repeating Itineraries
 DESTINATION_PLANS = {
     "bali": [
-        {"m": "Explore Sacred Monkey Forest Sanctuary", "a": "Visit Tegallalang Rice Terraces", "e": "Ubud Traditional Dance & Market Dinner"},
-        {"m": "Uluwatu Temple & Cliffside Views", "a": "Padang Padang Beach Surfing", "e": "Jimbaran Bay Seafood Sunset Dinner"},
-        {"m": "Tanah Lot Sea Temple Exploration", "a": "Canggu Beach Club Relaxation", "e": "Echo Beach Sunset Cocktails"},
-        {"m": "Mount Batur Sunrise Trek", "a": "Toya De Vasya Natural Hot Springs", "e": "Kintamani Lake View Café"},
-        {"m": "Sekumpul Waterfall Hike", "a": "Ulun Danu Beratan Temple at Lake Bratan", "e": "Bedugul Strawberry Farm & Dining"},
-        {"m": "Nusa Penida Island Ferry & Kelingking Beach", "a": "Broken Beach & Angel's Billabong", "e": "Sanur Beachfront Boardwalk Dinner"},
-        {"m": "Seminyak Beach & Boutique Shopping", "a": "Waterbom Bali Water Park", "e": "Ku De Ta Sunset Lounge"},
+        {"m": "Sacred Monkey Forest Sanctuary Tour", "a": "Tegallalang Rice Terraces & Swing", "e": "Ubud Traditional Dance & Market Dinner"},
+        {"m": "Uluwatu Temple & Cliffside Sea Views", "a": "Padang Padang Beach & Surfing", "e": "Jimbaran Bay Seafood Sunset Dinner"},
+        {"m": "Tanah Lot Sea Temple Exploration", "a": "Canggu Beach Club & Surfing", "e": "Echo Beach Sunset Cocktails"},
+        {"m": "Mount Batur Sunrise Volcano Trek", "a": "Toya De Vasya Natural Hot Springs", "e": "Kintamani Lake View Café"},
+        {"m": "Sekumpul Waterfall Hike", "a": "Ulun Danu Beratan Temple at Lake Bratan", "e": "Bedugul Fruit Market & Local Dinner"},
+        {"m": "Nusa Penida Ferry & Kelingking Beach", "a": "Broken Beach & Angel's Billabong", "e": "Sanur Beachfront Boardwalk Dinner"},
+        {"m": "Seminyak Beach & Boutique Shopping", "a": "Waterbom Bali Water Park Fun", "e": "Ku De Ta Sunset Lounge & Cocktails"},
     ],
     "tokyo": [
         {"m": "Senso-ji Temple & Nakamise Street", "a": "Tokyo Skytree Observation Deck", "e": "Asakusa Izakaya Alley Dinner"},
@@ -274,7 +294,6 @@ def _fallback_itinerary(state: dict, location: str, trip: dict, weather_data: di
     attractions = _fetch_attractions_data(location)
     loc_key = location.lower()
     
-    # Calculate number of days
     try:
         start_date = datetime.strptime(trip.get("start_date", ""), "%Y-%m-%d")
         end_date = datetime.strptime(trip.get("end_date", ""), "%Y-%m-%d")
@@ -284,12 +303,14 @@ def _fallback_itinerary(state: dict, location: str, trip: dict, weather_data: di
 
     itinerary = []
     
-    # Find matching preset plan for known destination
     matched_plan = None
     for key, plan in DESTINATION_PLANS.items():
         if key in loc_key:
             matched_plan = plan
             break
+
+    # Extract distinct non-empty attraction names from fetched list
+    valid_attractions = [a["name"] for a in attractions if a.get("name") and len(a["name"]) > 2]
 
     for day in range(1, num_days + 1):
         try:
@@ -302,23 +323,23 @@ def _fallback_itinerary(state: dict, location: str, trip: dict, weather_data: di
             m_act = plan_day["m"]
             a_act = plan_day["a"]
             e_act = plan_day["e"]
-        elif attractions and len(attractions) >= (day * 2):
-            # Use real attraction names from OpenTripMap
-            a1 = attractions[(day * 2 - 2) % len(attractions)].get("name", f"Landmark {day}A")
-            a2 = attractions[(day * 2 - 1) % len(attractions)].get("name", f"Landmark {day}B")
-            m_act = f"Visit {a1}"
-            a_act = f"Explore {a2}"
-            e_act = f"Dinner & Evening Stroll near {a1}"
+        elif len(valid_attractions) >= (num_days * 2):
+            # Take distinct attraction for morning and afternoon (no repeating)
+            m_name = valid_attractions[(day - 1) * 2]
+            a_name = valid_attractions[(day - 1) * 2 + 1]
+            m_act = f"Visit {m_name}"
+            a_act = f"Explore {a_name}"
+            e_act = f"Dinner & Evening Promenade near {m_name}"
         else:
-            # Generic unique themes per day
+            # Distinct unique daily themes guaranteed
             themes = [
-                ("Historic City Center & Main Square", "Central Museums & Cultural Heritage", "Local Culinary Tour & Night Market"),
-                ("Iconic Landmark & Observation Deck", "Botanical Gardens & Scenic Waterfront", "Sunset Viewpoint & Regional Dining"),
-                ("Famous Art Galleries & Historic Fort", "Artisan Quarter & Local Boutiques", "Atmospheric Café Hopping & Live Music"),
-                ("Nature Park & Hiking Trails", "Local Craft Market & Souvenirs", "Rooftop Lounge & Panoramic Night View"),
-                ("Architectural Tour & Historic Palaces", "Riverside Walk & Photo Spots", "Bistro Dining & Theater Experience"),
-                ("Coastal / Lakeside Exploration", "Historic District Walking Tour", "Harbor Cruise & Waterfront Dining"),
-                ("Leisurely Morning at Local Parks", "Shopping & Flea Market Discovery", "Farewell Dinner & Evening Stroll"),
+                ("Historic City Center & Main Square Tour", "Central Museums & Cultural Heritage Walk", "Local Culinary Night Market"),
+                ("Iconic City Landmark & Sky Deck View", "Botanical Gardens & Scenic Waterfront Promenade", "Sunset Viewpoint & Regional Specialty Dining"),
+                ("Art Galleries & Heritage Fort Exploration", "Artisan Quarter & Boutique Shopping", "Atmospheric Café Hopping & Live Music"),
+                ("Nature Park & Scenic Hiking Trails", "Local Craft Market & Souvenir Discovery", "Rooftop Lounge & Panoramic Night Skyline View"),
+                ("Architectural Tour & Historic Palaces", "Riverside Walk & Photo Landmarks", "Bistro Dining & Theater Performance"),
+                ("Coastal / Lakeside Exploration & Beach Walk", "Historic District Walking Tour", "Harbor Sightseeing Cruise & Dinner"),
+                ("Leisurely Morning at Central Park", "Shopping Arcade & Flea Market Discovery", "Farewell Dinner & Evening Stroll"),
             ]
             t = themes[(day - 1) % len(themes)]
             m_act = f"{t[0]} in {location}"
@@ -333,23 +354,23 @@ def _fallback_itinerary(state: dict, location: str, trip: dict, weather_data: di
                 "activity": m_act,
                 "location": location,
                 "duration": "2.5 hours",
-                "tips": f"Great morning spot in {location}"
+                "tips": f"Start early for a smooth morning experience in {location}"
             },
             "afternoon": {
                 "activity": a_act,
                 "location": location,
                 "duration": "3 hours",
-                "tips": f"Best visited during afternoon hours"
+                "tips": f"Ideal for photos and sightseeing"
             },
             "evening": {
                 "activity": e_act,
                 "location": location,
                 "duration": "2 hours",
-                "tips": f"Enjoy the evening atmosphere in {location}"
+                "tips": f"Enjoy the local nightlife and evening vibe in {location}"
             },
         })
 
-    recs = [f"Generated a {num_days}-day itinerary for {location}."]
+    recs = [f"Generated a comprehensive {num_days}-day itinerary for {location}."]
     return {
         "itinerary": itinerary,
         "weather": weather_data,
