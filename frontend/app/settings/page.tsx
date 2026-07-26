@@ -19,7 +19,6 @@ export default function SettingsPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Preferences endpoint would be /preferences but we'll show a success for now
       toast.success("Preferences saved!");
     } catch {
       toast.error("Failed to save preferences.");
@@ -28,66 +27,106 @@ export default function SettingsPage() {
     }
   };
 
+  const fieldStyle = {
+    background: "#faf7f2",
+    border: "1.5px solid #e8e0d5",
+    color: "#1c1917",
+    borderRadius: 12,
+    padding: "10px 14px",
+    width: "100%",
+    fontSize: 13,
+    fontWeight: 500,
+    outline: "none",
+    transition: "border-color 0.15s",
+  };
+
   return (
     <AppLayout>
-      <div className="max-w-xl mx-auto">
-        <div className="mb-6">
-          <h1 className="text-xl font-semibold flex items-center gap-2"><Settings className="w-5 h-5" /> Settings</h1>
-          <p className="text-sm text-[hsl(var(--muted-foreground))] mt-0.5">Manage your profile and preferences.</p>
+      <div className="max-w-xl mx-auto space-y-6">
+        <div>
+          <h1 className="text-2xl font-extrabold tracking-tight flex items-center gap-2" style={{ color: "#1c1917" }}>
+            <Settings className="w-5 h-5" style={{ color: "#0d9488" } as any} /> Account & Preferences
+          </h1>
+          <p className="text-xs font-medium mt-0.5" style={{ color: "#78716c" }}>Manage your personal profile and default AI trip planning parameters.</p>
         </div>
 
-        {/* Profile */}
-        <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-xl p-5 mb-4">
-          <h2 className="text-sm font-semibold mb-4">Profile</h2>
+        {/* Profile Card */}
+        <div className="rounded-3xl p-6" style={{ background: "#ffffff", border: "1px solid #e8e0d5" }}>
+          <h2 className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: "#a8a29e" }}>User Profile</h2>
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-blue-600/20 border border-blue-600/30 flex items-center justify-center text-blue-400 text-lg font-semibold">
-              {formatUsername(user).charAt(0)}
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-lg font-extrabold" style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", color: "#0d9488" }}>
+              {formatUsername(user).charAt(0).toUpperCase()}
             </div>
             <div>
-              <p className="text-sm font-medium">{formatUsername(user)}</p>
-              <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">{user?.email}</p>
+              <p className="text-sm font-extrabold" style={{ color: "#1c1917" }}>{formatUsername(user)}</p>
+              <p className="text-xs font-medium mt-0.5" style={{ color: "#78716c" }}>{user?.email}</p>
             </div>
           </div>
         </div>
 
-        {/* Preferences */}
-        <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-xl p-5 space-y-5">
-          <h2 className="text-sm font-semibold">Travel Preferences</h2>
+        {/* Preferences Card */}
+        <div className="rounded-3xl p-6 space-y-5" style={{ background: "#ffffff", border: "1px solid #e8e0d5" }}>
+          <h2 className="text-xs font-bold uppercase tracking-wider" style={{ color: "#a8a29e" }}>Travel Preferences</h2>
 
           <div>
-            <label className="block text-xs font-medium mb-1.5 text-[hsl(var(--muted-foreground))]">Preferred Currency</label>
-            <select value={form.preferred_currency} onChange={e => setForm({...form, preferred_currency: e.target.value})} className="w-full bg-[hsl(var(--input))] border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-500 transition-colors">
+            <label className="block text-xs font-bold mb-1.5" style={{ color: "#44403c" }}>Preferred Currency</label>
+            <select
+              value={form.preferred_currency}
+              onChange={e => setForm({...form, preferred_currency: e.target.value})}
+              style={fieldStyle as any}
+              onFocus={e => (e.target.style.borderColor = "#0d9488")}
+              onBlur={e => (e.target.style.borderColor = "#e8e0d5")}
+            >
               {CURRENCIES.map(c => <option key={c}>{c}</option>)}
             </select>
           </div>
 
           <div>
-            <label className="block text-xs font-medium mb-1.5 text-[hsl(var(--muted-foreground))]">Food Preference</label>
-            <select value={form.food_preference} onChange={e => setForm({...form, food_preference: e.target.value})} className="w-full bg-[hsl(var(--input))] border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-500 transition-colors">
+            <label className="block text-xs font-bold mb-1.5" style={{ color: "#44403c" }}>Food Preference</label>
+            <select
+              value={form.food_preference}
+              onChange={e => setForm({...form, food_preference: e.target.value})}
+              style={fieldStyle as any}
+              onFocus={e => (e.target.style.borderColor = "#0d9488")}
+              onBlur={e => (e.target.style.borderColor = "#e8e0d5")}
+            >
               <option value="">Select preference</option>
               {FOOD_PREFS.map(f => <option key={f}>{f}</option>)}
             </select>
           </div>
 
           <div>
-            <label className="block text-xs font-medium mb-1.5 text-[hsl(var(--muted-foreground))]">Travel Style</label>
-            <select value={form.travel_style} onChange={e => setForm({...form, travel_style: e.target.value})} className="w-full bg-[hsl(var(--input))] border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-500 transition-colors">
+            <label className="block text-xs font-bold mb-1.5" style={{ color: "#44403c" }}>Travel Style</label>
+            <select
+              value={form.travel_style}
+              onChange={e => setForm({...form, travel_style: e.target.value})}
+              style={fieldStyle as any}
+              onFocus={e => (e.target.style.borderColor = "#0d9488")}
+              onBlur={e => (e.target.style.borderColor = "#e8e0d5")}
+            >
               <option value="">Select style</option>
               {TRAVEL_STYLES.map(s => <option key={s}>{s}</option>)}
             </select>
           </div>
 
           <div>
-            <label className="block text-xs font-medium mb-1.5 text-[hsl(var(--muted-foreground))]">Favorite Categories</label>
+            <label className="block text-xs font-bold mb-1.5" style={{ color: "#44403c" }}>Favorite Categories</label>
             <input
               value={form.favorite_categories}
               onChange={e => setForm({...form, favorite_categories: e.target.value})}
               placeholder="museums, food, nature, architecture"
-              className="w-full bg-[hsl(var(--input))] border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-500 transition-colors"
+              style={fieldStyle as any}
+              onFocus={e => (e.target.style.borderColor = "#0d9488")}
+              onBlur={e => (e.target.style.borderColor = "#e8e0d5")}
             />
           </div>
 
-          <button onClick={handleSave} disabled={saving} className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white py-2.5 rounded-lg text-sm font-medium transition-colors">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="w-full py-3 rounded-xl text-xs font-bold transition-all mt-2"
+            style={{ background: saving ? "#a8a29e" : "#0d9488", color: "#ffffff" }}
+          >
             {saving ? "Saving..." : "Save Preferences"}
           </button>
         </div>

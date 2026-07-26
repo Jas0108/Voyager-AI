@@ -12,10 +12,10 @@ const AGENT_LABELS: Record<string, string> = {
 };
 
 const AGENT_COLORS: Record<string, string> = {
-  supervisor: "text-purple-400 bg-purple-400/10 border-purple-400/20",
-  planning: "text-blue-400 bg-blue-400/10 border-blue-400/20",
-  discovery: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20",
-  budget: "text-amber-400 bg-amber-400/10 border-amber-400/20",
+  supervisor: "text-purple-700 bg-purple-50 border-purple-200",
+  planning: "text-teal-700 bg-teal-50 border-teal-200",
+  discovery: "text-emerald-700 bg-emerald-50 border-emerald-200",
+  budget: "text-amber-700 bg-amber-50 border-amber-200",
 };
 
 export default function ExecutionPlanBadge({ plan }: ExecutionPlanBadgeProps) {
@@ -24,22 +24,23 @@ export default function ExecutionPlanBadge({ plan }: ExecutionPlanBadgeProps) {
   const fullPlan = ["supervisor", ...plan];
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5 mt-2 pt-2 border-t border-white/5">
-      <span className="text-[10px] text-[hsl(var(--muted-foreground))] font-medium uppercase tracking-wider">
-        Execution Plan:
+    <div className="flex flex-wrap items-center gap-1.5 mt-3 pt-2.5 border-t border-slate-100">
+      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+        Agent Workflow:
       </span>
       {fullPlan.map((agent, idx) => (
         <div key={`${agent}-${idx}`} className="flex items-center gap-1">
           <span
-            className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${AGENT_COLORS[agent] || "text-gray-400 bg-gray-400/10 border-gray-400/20"}`}
+            className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${AGENT_COLORS[agent] || "text-slate-600 bg-slate-100 border-slate-200"}`}
           >
             {AGENT_LABELS[agent] || agent}
           </span>
           {idx < fullPlan.length - 1 && (
-            <ArrowRight className="w-2.5 h-2.5 text-[hsl(var(--muted-foreground))]" />
+            <ArrowRight className="w-2.5 h-2.5 text-slate-300" />
           )}
         </div>
       ))}
     </div>
   );
 }
+

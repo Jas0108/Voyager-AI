@@ -8,24 +8,24 @@ import PlacesView from "@/components/PlacesView";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { tripService, expenseService, assistantService } from "@/services";
 import { Message, ItineraryDay, NearbyPlace, ChatResponse } from "@/types";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, use, Suspense } from "react";
 import { toast } from "sonner";
-import { Send, MapPin, CalendarDays, Wallet, Plus, Trash2, ExternalLink, Sun, Sunset, Moon, Sunrise, X, Edit2, CheckCircle } from "lucide-react";
+import { Send, MapPin, CalendarDays, Wallet, Plus, Trash2, X, CheckCircle, Sparkles, Compass } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { Progress } from "@/components/ui/progress";
-import { use } from "react";
+import { useSearchParams } from "next/navigation";
 
 // ─── Thinking Indicator ────────────────────────────────────────────────────────
 function ThinkingIndicator() {
   return (
-    <div className="flex items-center gap-2 px-4 py-3 bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-xl max-w-xs">
+    <div className="flex items-center gap-2.5 px-4 py-3 rounded-2xl max-w-xs" style={{ background: "#f5f0e8", border: "1px solid #e8e0d5" }}>
       <div className="flex gap-1">
-        {[0,1,2].map((i) => (
-          <div key={i} className={`thinking-dot w-1.5 h-1.5 rounded-full bg-blue-400`} />
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="thinking-dot w-1.5 h-1.5 rounded-full" style={{ background: "#0d9488" }} />
         ))}
       </div>
-      <span className="text-xs text-[hsl(var(--muted-foreground))]">Voyager AI is thinking...</span>
+      <span className="text-xs font-semibold" style={{ color: "#78716c" }}>Voyager AI is thinking...</span>
     </div>
   );
 }
@@ -47,35 +47,40 @@ function ExpenseModal({ tripId, currency, onClose, onSuccess }: any) {
     onError: (e: any) => toast.error(e.response?.data?.detail || e.message || "Failed to add expense"),
   });
 
+  const inputStyle = {
+    background: "#faf7f2", border: "1.5px solid #e8e0d5", color: "#1c1917",
+    borderRadius: 12, padding: "10px 14px", width: "100%", fontSize: 13, fontWeight: 500, outline: "none",
+  };
+
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-xl p-6 w-full max-w-sm">
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="font-semibold text-sm">Add Expense</h3>
-          <button onClick={onClose} className="text-[hsl(var(--muted-foreground))] hover:text-white"><X className="w-4 h-4" /></button>
+    <div className="fixed inset-0 flex items-center justify-center z-50 p-4" style={{ background: "rgba(28,25,23,0.4)" }}>
+      <div className="rounded-3xl p-6 w-full max-w-sm space-y-4" style={{ background: "#ffffff", border: "1px solid #e8e0d5", boxShadow: "0 8px 40px rgba(0,0,0,0.12)" }}>
+        <div className="flex items-center justify-between">
+          <h3 className="font-extrabold text-base" style={{ color: "#1c1917" }}>Add New Expense</h3>
+          <button onClick={onClose} className="p-1 rounded-lg" style={{ color: "#a8a29e" }}><X className="w-4 h-4" /></button>
         </div>
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-medium mb-1.5 text-[hsl(var(--muted-foreground))]">Category</label>
-            <select value={form.category} onChange={e => setForm({...form, category: e.target.value})} className="w-full bg-[hsl(var(--input))] border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm outline-none">
+            <label className="block text-xs font-bold mb-1.5" style={{ color: "#44403c" }}>Category</label>
+            <select value={form.category} onChange={e => setForm({...form, category: e.target.value})} style={inputStyle as any}>
               {categories.map(c => <option key={c}>{c}</option>)}
             </select>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium mb-1.5 text-[hsl(var(--muted-foreground))]">Amount</label>
-              <input type="number" value={form.amount} onChange={e => setForm({...form, amount: e.target.value})} placeholder="50" className="w-full bg-[hsl(var(--input))] border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm outline-none" />
+              <label className="block text-xs font-bold mb-1.5" style={{ color: "#44403c" }}>Amount</label>
+              <input type="number" value={form.amount} onChange={e => setForm({...form, amount: e.target.value})} placeholder="50" style={inputStyle as any} />
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1.5 text-[hsl(var(--muted-foreground))]">Currency</label>
-              <input value={form.currency} onChange={e => setForm({...form, currency: e.target.value})} className="w-full bg-[hsl(var(--input))] border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm outline-none" />
+              <label className="block text-xs font-bold mb-1.5" style={{ color: "#44403c" }}>Currency</label>
+              <input value={form.currency} onChange={e => setForm({...form, currency: e.target.value})} style={inputStyle as any} />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1.5 text-[hsl(var(--muted-foreground))]">Description (optional)</label>
-            <input value={form.description} onChange={e => setForm({...form, description: e.target.value})} placeholder="Sushi dinner" className="w-full bg-[hsl(var(--input))] border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm outline-none" />
+            <label className="block text-xs font-bold mb-1.5" style={{ color: "#44403c" }}>Description (optional)</label>
+            <input value={form.description} onChange={e => setForm({...form, description: e.target.value})} placeholder="Sushi dinner" style={inputStyle as any} />
           </div>
-          <button onClick={() => mutation.mutate()} disabled={!form.amount || parseFloat(form.amount) <= 0 || mutation.isPending} className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white py-2.5 rounded-lg text-sm font-medium transition-colors">
+          <button onClick={() => mutation.mutate()} disabled={!form.amount || parseFloat(form.amount) <= 0 || mutation.isPending} className="w-full py-3 rounded-xl text-xs font-bold transition-all mt-2" style={{ background: form.amount && !mutation.isPending ? "#0d9488" : "#a8a29e", color: "#ffffff" }}>
             {mutation.isPending ? "Saving..." : "Save Expense"}
           </button>
         </div>
@@ -84,10 +89,12 @@ function ExpenseModal({ tripId, currency, onClose, onSuccess }: any) {
   );
 }
 
-// ─── Main Component ────────────────────────────────────────────────────────────
-export default function TripDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+// ─── Inner Component ───────────────────────────────────────────────────────────
+function TripDetailContent({ id }: { id: string }) {
   const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
+  const initialPrompt = searchParams?.get("prompt") || "";
+  const autoSentRef = useRef(false);
 
   const [messages, setMessages] = useState<(Message & { plan?: string[] })[]>([]);
   const [input, setInput] = useState("");
@@ -115,15 +122,12 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
   const remainingBudget = (trip?.budget || 0) - totalSpent;
   const budgetPct = trip?.budget ? Math.min((totalSpent / trip.budget) * 100, 100) : 0;
 
-  const sendMessage = async () => {
-    if (!input.trim() || isThinking) return;
-    const userMsg = input.trim();
-    setInput("");
-    setMessages(prev => [...prev, { role: "user", content: userMsg }]);
+  const sendMessageText = async (msgText: string) => {
+    if (!msgText.trim() || isThinking) return;
+    setMessages(prev => [...prev, { role: "user", content: msgText }]);
     setIsThinking(true);
-
     try {
-      const res: ChatResponse = await assistantService.chat(id, userMsg);
+      const res: ChatResponse = await assistantService.chat(id, msgText);
       setMessages(prev => [...prev, { role: "assistant", content: res.response, plan: res.execution_plan }]);
       if (res.itinerary?.length) setItinerary(res.itinerary);
       if (res.nearby_places?.length) setNearbyPlaces(res.nearby_places);
@@ -140,6 +144,20 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
       setIsThinking(false);
     }
   };
+
+  const sendMessage = async () => {
+    if (!input.trim() || isThinking) return;
+    const userMsg = input.trim();
+    setInput("");
+    await sendMessageText(userMsg);
+  };
+
+  useEffect(() => {
+    if (initialPrompt && !autoSentRef.current && trip) {
+      autoSentRef.current = true;
+      sendMessageText(initialPrompt);
+    }
+  }, [initialPrompt, trip]);
 
   const deleteExpense = useMutation({
     mutationFn: expenseService.deleteExpense,
@@ -176,78 +194,87 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
     onError: () => toast.error("Failed to complete trip."),
   });
 
-  if (tripLoading) return <AppLayout><div className="text-sm text-[hsl(var(--muted-foreground))] p-6">Loading trip...</div></AppLayout>;
-  if (!trip) return <AppLayout><div className="p-6 text-center">
-    <div className="text-sm text-red-400 mb-2">Trip not found</div>
-    <p className="text-xs text-[hsl(var(--muted-foreground))] mb-4">This trip may have been deleted or the ID is invalid.</p>
-    <Link href="/trips" className="text-xs text-blue-400 hover:text-blue-300">← Back to My Trips</Link>
-  </div></AppLayout>;
+  if (tripLoading) return <div className="text-xs p-6" style={{ color: "#a8a29e" }}>Loading trip details...</div>;
+  if (!trip) return <div className="p-12 text-center rounded-3xl max-w-md mx-auto" style={{ background: "#ffffff", border: "1px solid #e8e0d5" }}>
+    <div className="text-sm font-bold mb-2" style={{ color: "#dc2626" }}>Trip Not Found</div>
+    <p className="text-xs mb-6" style={{ color: "#78716c" }}>This trip may have been deleted or the link is invalid.</p>
+    <Link href="/trips" className="inline-flex items-center gap-1 text-xs font-bold" style={{ color: "#0d9488" }}>← Back to My Trips</Link>
+  </div>;
 
   return (
-    <AppLayout>
+    <>
       {showExpenseModal && <ExpenseModal tripId={id} currency={trip.currency} onClose={() => setShowExpenseModal(false)} onSuccess={refetchExpenses} />}
 
-      <div className="max-w-7xl mx-auto">
-        {/* Trip Header */}
-        <div className="flex items-start justify-between mb-6 flex-wrap gap-3">
+      <div className="max-w-7xl mx-auto space-y-8 py-2">
+
+        {/* Clean Spacious Trip Header */}
+        <div className="rounded-3xl p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm"
+          style={{ background: "#ffffff", border: "1px solid #e8e0d5" }}>
           <div>
-            <h1 className="text-2xl font-semibold flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-blue-400" /> {trip.destination}
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-[11px] font-bold px-2.5 py-1 rounded-md"
+                style={trip.status === "completed"
+                  ? { background: "#f5f0e8", color: "#78716c" }
+                  : { background: "#e6f4f1", color: "#0f766e" }}>
+                {trip.status === "completed" ? "Completed Trip" : "Active Trip Workspace"}
+              </span>
+            </div>
+            <h1 className="text-3xl font-extrabold tracking-tight" style={{ color: "#1c1917" }}>
+              {trip.destination}
             </h1>
-            <p className="text-sm text-[hsl(var(--muted-foreground))] mt-1 flex items-center gap-1.5">
-              <CalendarDays className="w-3.5 h-3.5" />
-              {format(new Date(trip.start_date), "MMM d")} – {format(new Date(trip.end_date), "MMM d, yyyy")}
-              <span className="mx-1 text-white/10">·</span>
-              <Wallet className="w-3.5 h-3.5" />
-              {trip.currency} {trip.budget.toLocaleString()} budget
-            </p>
+            <div className="flex items-center gap-4 text-xs font-medium mt-2" style={{ color: "#78716c" }}>
+              <span className="flex items-center gap-1.5"><CalendarDays className="w-4 h-4" style={{ color: "#0d9488" } as any} /> {format(new Date(trip.start_date), "MMM d")} to {format(new Date(trip.end_date), "MMM d, yyyy")}</span>
+              <span style={{ color: "#d6d3d1" }}>·</span>
+              <span className="flex items-center gap-1.5"><Wallet className="w-4 h-4" style={{ color: "#166534" } as any} /> {trip.currency} {trip.budget.toLocaleString()} budget</span>
+            </div>
           </div>
-          <div className="flex gap-2">
+
+          <div className="flex items-center gap-3 flex-shrink-0">
             {(!trip.status || trip.status === "active") && (
-              <button onClick={() => completeTrip.mutate()} disabled={completeTrip.isPending} className="flex items-center gap-2 bg-emerald-600/10 border border-emerald-600/20 text-emerald-400 hover:bg-emerald-600/20 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50">
-                <CheckCircle className="w-3.5 h-3.5" /> {completeTrip.isPending ? "Completing..." : "Complete Trip"}
+              <button onClick={() => completeTrip.mutate()} disabled={completeTrip.isPending} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all" style={{ background: "#f5f0e8", border: "1px solid #e8e0d5", color: "#44403c" }}>
+                <CheckCircle className="w-4 h-4 text-emerald-600" /> {completeTrip.isPending ? "Completing..." : "Complete Trip"}
               </button>
             )}
-            <button onClick={() => setShowExpenseModal(true)} className="flex items-center gap-2 bg-blue-600/10 border border-blue-600/20 text-blue-400 hover:bg-blue-600/20 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-              <Plus className="w-3.5 h-3.5" /> Add Expense
+            <button onClick={() => setShowExpenseModal(true)} className="flex items-center gap-2 px-4.5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm" style={{ background: "#0d9488", color: "#ffffff" }}>
+              <Plus className="w-4 h-4" /> Add Expense
             </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
           {/* LEFT COLUMN */}
-          <div className="xl:col-span-2 space-y-4">
+          <div className="xl:col-span-2 space-y-8">
             {/* Budget Card */}
-            <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-xl p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-sm font-semibold">Budget Overview</h2>
-                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${budgetPct > 90 ? "bg-red-400/10 text-red-400 border border-red-400/20" : budgetPct > 70 ? "bg-amber-400/10 text-amber-400 border border-amber-400/20" : "bg-emerald-400/10 text-emerald-400 border border-emerald-400/20"}`}>
+            <div className="rounded-3xl p-7" style={{ background: "#ffffff", border: "1px solid #e8e0d5" }}>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-xs font-bold uppercase tracking-wider" style={{ color: "#78716c" }}>Budget Overview</h2>
+                <span className="text-xs font-bold px-2.5 py-1 rounded-md" style={budgetPct > 90 ? { background: "#fef2f2", color: "#991b1b" } : budgetPct > 70 ? { background: "#fffbeb", color: "#92400e" } : { background: "#e6f4f1", color: "#0f766e" }}>
                   {budgetPct.toFixed(0)}% used
                 </span>
               </div>
-              <Progress value={budgetPct} className="h-1.5 mb-4" />
-              <div className="grid grid-cols-3 gap-4 text-center">
+              <Progress value={budgetPct} className="h-2 mb-6" style={{ background: "#f5f0e8" }} />
+              <div className="grid grid-cols-3 gap-4 text-center" style={{ borderTop: "1px solid #f0ebe3", paddingTop: "1.25rem" }}>
                 {[
                   { label: "Budget", value: `${trip.currency} ${trip.budget.toLocaleString()}` },
                   { label: "Spent", value: `${trip.currency} ${totalSpent.toFixed(2)}` },
                   { label: "Remaining", value: `${trip.currency} ${remainingBudget.toFixed(2)}`, highlight: remainingBudget < 0 },
                 ].map(({ label, value, highlight }) => (
                   <div key={label}>
-                    <div className={`text-base font-semibold ${highlight ? "text-red-400" : ""}`}>{value}</div>
-                    <div className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">{label}</div>
+                    <div className="text-base font-extrabold tracking-tight" style={{ color: highlight ? "#dc2626" : "#1c1917" }}>{value}</div>
+                    <div className="text-xs font-semibold mt-0.5" style={{ color: "#78716c" }}>{label}</div>
                   </div>
                 ))}
               </div>
               {/* Expenses list */}
               {expenses.length > 0 && (
-                <div className="mt-4 pt-4 border-t border-[hsl(var(--border))] space-y-2">
+                <div className="mt-5 pt-5 space-y-2.5" style={{ borderTop: "1px solid #f0ebe3" }}>
                   {expenses.slice(0, 5).map((e) => (
-                    <div key={e.id} className="flex items-center justify-between text-xs">
-                      <span className="text-[hsl(var(--muted-foreground))]">{e.category} {e.description ? `· ${e.description}` : ""}</span>
+                    <div key={e.id} className="flex items-center justify-between text-xs font-medium">
+                      <span style={{ color: "#57534e" }}>{e.category} {e.description ? `· ${e.description}` : ""}</span>
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">{e.currency} {e.amount}</span>
-                        <button onClick={() => deleteExpense.mutate(e.id)} className="text-[hsl(var(--muted-foreground))] hover:text-red-400 transition-colors">
-                          <Trash2 className="w-3 h-3" />
+                        <span className="font-bold" style={{ color: "#1c1917" }}>{e.currency} {e.amount}</span>
+                        <button onClick={() => deleteExpense.mutate(e.id)} className="transition-colors p-1" style={{ color: "#c8bfb0" }}>
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </div>
@@ -273,40 +300,47 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
 
             {/* Empty state when no AI results yet */}
             {itinerary.length === 0 && nearbyPlaces.length === 0 && (
-              <div className="bg-[hsl(var(--card))] border border-dashed border-[hsl(var(--border))] rounded-xl p-8 text-center">
-                <p className="text-sm text-[hsl(var(--muted-foreground))] mb-2">No itinerary yet</p>
-                <p className="text-xs text-[hsl(var(--muted-foreground))]">Ask Voyager AI to plan your trip →</p>
+              <div className="rounded-3xl p-12 text-center space-y-3" style={{ background: "#ffffff", border: "2px dashed #e8e0d5" }}>
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto" style={{ background: "#e6f4f1" }}>
+                  <Sparkles className="w-6 h-6" style={{ color: "#0d9488" } as any} />
+                </div>
+                <p className="text-base font-bold" style={{ color: "#1c1917" }}>No itinerary generated yet</p>
+                <p className="text-xs font-medium max-w-sm mx-auto" style={{ color: "#78716c" }}>Ask Voyager AI in the assistant panel to build a personalized day-by-day plan for {trip.destination}.</p>
               </div>
             )}
           </div>
 
           {/* RIGHT COLUMN - AI ASSISTANT */}
           <div className="xl:col-span-1">
-            <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-xl flex flex-col h-[600px] sticky top-20">
+            <div className="rounded-3xl flex flex-col h-[640px] sticky top-24 overflow-hidden" style={{ background: "#ffffff", border: "1px solid #e8e0d5" }}>
               {/* Chat Header */}
-              <div className="px-4 py-3.5 border-b border-[hsl(var(--border))] flex-shrink-0">
-                <h2 className="text-sm font-semibold">AI Assistant</h2>
-                <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">Smart Travel Companion</p>
+              <div className="px-6 py-5 flex-shrink-0" style={{ borderBottom: "1px solid #f0ebe3", background: "#faf7f2" }}>
+                <h2 className="text-sm font-extrabold tracking-tight flex items-center gap-2" style={{ color: "#1c1917" }}>
+                  <Sparkles className="w-4 h-4" style={{ color: "#0d9488" } as any} /> Voyager Assistant
+                </h2>
+                <p className="text-xs font-medium mt-0.5" style={{ color: "#78716c" }}>Interactive Planning Agent</p>
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              <div className="flex-1 overflow-y-auto p-5 space-y-4">
                 {messages.length === 0 && (
-                  <div className="text-center py-8">
-                    <p className="text-xs text-[hsl(var(--muted-foreground))] mb-4">Try asking:</p>
-                    {[`Plan my ${trip.destination} trip`, `Find restaurants near my hotel`, "How much budget is left?"].map((s) => (
-                      <button key={s} onClick={() => setInput(s)} className="block w-full text-left text-xs bg-white/5 hover:bg-white/10 border border-white/5 rounded-lg px-3 py-2 mb-2 transition-colors text-[hsl(var(--muted-foreground))] hover:text-white">
-                        {s}
-                      </button>
-                    ))}
+                  <div className="text-center py-10 space-y-4">
+                    <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#a8a29e" }}>Suggested Prompts</p>
+                    <div className="space-y-2">
+                      {[`Plan my ${trip.destination} trip`, `Find restaurants near my hotel`, "How much budget is left?"].map((s) => (
+                        <button key={s} onClick={() => setInput(s)} className="block w-full text-left text-xs rounded-xl px-4 py-3 transition-all font-medium" style={{ background: "#f5f0e8", border: "1px solid #e8e0d5", color: "#57534e" }} onMouseEnter={e => { e.currentTarget.style.borderColor = "#0d9488"; e.currentTarget.style.color = "#0d9488"; }} onMouseLeave={e => { e.currentTarget.style.borderColor = "#e8e0d5"; e.currentTarget.style.color = "#57534e"; }}>
+                          {s}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
 
                 {messages.map((msg, i) => (
                   <div key={i} className={`fade-in ${msg.role === "user" ? "flex justify-end" : ""}`}>
-                    <div className={`rounded-xl px-3.5 py-2.5 max-w-[90%] text-sm leading-relaxed ${msg.role === "user" ? "chat-user text-white" : "chat-assistant"}`}>
+                    <div className={`rounded-2xl px-4.5 py-3 max-w-[90%] text-sm leading-relaxed ${msg.role === "user" ? "chat-user" : "chat-assistant"}`}>
                       {msg.role === "user" ? (
-                        msg.content
+                        <p className="font-medium">{msg.content}</p>
                       ) : (
                         <FormattedMessage content={msg.content} />
                       )}
@@ -320,22 +354,26 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
               </div>
 
               {/* Input */}
-              <div className="p-3 border-t border-[hsl(var(--border))] flex-shrink-0">
+              <div className="p-4 flex-shrink-0" style={{ borderTop: "1px solid #f0ebe3", background: "#faf7f2" }}>
                 <div className="flex gap-2">
                   <input
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
                     placeholder="Ask anything about your trip..."
-                    className="flex-1 bg-[hsl(var(--input))] border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-xs outline-none focus:border-blue-500 transition-colors"
+                    className="flex-1 rounded-xl px-4 py-2.5 text-xs font-medium outline-none transition-colors"
+                    style={{ background: "#ffffff", border: "1.5px solid #e8e0d5", color: "#1c1917" }}
+                    onFocus={e => (e.target.style.borderColor = "#0d9488")}
+                    onBlur={e => (e.target.style.borderColor = "#e8e0d5")}
                     disabled={isThinking}
                   />
                   <button
                     onClick={sendMessage}
                     disabled={!input.trim() || isThinking}
-                    className="w-9 h-9 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 rounded-lg flex items-center justify-center transition-colors flex-shrink-0"
+                    className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors flex-shrink-0"
+                    style={{ background: !input.trim() || isThinking ? "#e8e0d5" : "#0d9488" }}
                   >
-                    <Send className="w-3.5 h-3.5 text-white" />
+                    <Send className="w-4 h-4 text-white" />
                   </button>
                 </div>
               </div>
@@ -343,7 +381,17 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
           </div>
         </div>
       </div>
-    </AppLayout>
+    </>
   );
 }
 
+export default function TripDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  return (
+    <AppLayout>
+      <Suspense fallback={<div className="text-xs p-6" style={{ color: "#a8a29e" }}>Loading trip details...</div>}>
+        <TripDetailContent id={id} />
+      </Suspense>
+    </AppLayout>
+  );
+}

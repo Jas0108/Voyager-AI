@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plane, ArrowLeft } from "lucide-react";
+import { ArrowLeft, Compass } from "lucide-react";
 import { toast } from "sonner";
 import { authService } from "@/services";
 
@@ -37,92 +37,119 @@ function LoginForm() {
       toast.success(isSignup ? "Account created!" : "Welcome back!");
       router.push("/dashboard");
     } catch (err: any) {
-      const msg = err.response?.data?.detail || "Something went wrong.";
-      toast.error(msg);
+      toast.error(err.response?.data?.detail || "Something went wrong.");
     } finally {
       setLoading(false);
     }
   };
 
+  const fieldStyle = {
+    background: "#faf7f2",
+    border: "1.5px solid #e8e0d5",
+    color: "#1c1917",
+    borderRadius: 12,
+    padding: "11px 14px",
+    width: "100%",
+    fontSize: 14,
+    fontWeight: 500,
+    outline: "none",
+    transition: "border-color 0.15s",
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-[hsl(var(--background))] relative">
-      {/* Back Arrow Button */}
-      <Link
-        href="/"
-        aria-label="Back to home"
-        className="absolute top-6 left-6 p-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-[hsl(var(--muted-foreground))] hover:text-white transition-all group"
-      >
-        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+    <div className="min-h-screen flex items-center justify-center px-4 py-12" style={{ background: "#f5f0e8" }}>
+      {/* Back link */}
+      <Link href="/"
+        className="absolute top-6 left-6 flex items-center gap-1.5 text-sm font-semibold transition-colors"
+        style={{ color: "#78716c" }}>
+        <ArrowLeft className="w-4 h-4" /> Back
       </Link>
 
-      <div className="w-full max-w-sm">
+      <div className="w-full max-w-sm space-y-6">
         {/* Logo */}
-        <Link href="/" className="flex items-center justify-center gap-2.5 mb-8 hover:opacity-90 transition-opacity">
-          <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center">
-            <Plane className="w-5 h-5 text-white" />
-          </div>
-          <span className="font-semibold text-base">Voyager AI</span>
-        </Link>
+        <div className="text-center">
+          <Link href="/" className="inline-flex items-center gap-2.5 justify-center mb-1">
+            <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "#134e4a" }}>
+              <Compass className="w-5 h-5 text-white" />
+            </div>
+            <span className="font-extrabold text-xl tracking-tight" style={{ color: "#1c1917" }}>Voyager AI</span>
+          </Link>
+          <p className="text-sm font-medium mt-2" style={{ color: "#78716c" }}>
+            {isSignup ? "Create your account to start planning." : "Sign in to continue your journey."}
+          </p>
+        </div>
 
         {/* Card */}
-        <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-xl p-7">
-          <h1 className="text-lg font-semibold mb-1">
-            {isSignup ? "Create your account" : "Welcome back"}
+        <div className="rounded-3xl p-8 space-y-4"
+          style={{ background: "#ffffff", border: "1px solid #e8e0d5", boxShadow: "0 4px 24px rgba(0,0,0,0.06)" }}>
+          <h1 className="text-xl font-extrabold tracking-tight" style={{ color: "#1c1917" }}>
+            {isSignup ? "Create account" : "Welcome back"}
           </h1>
-          <p className="text-sm text-[hsl(var(--muted-foreground))] mb-6">
-            {isSignup ? "Start planning your perfect trip." : "Sign in to continue your journey."}
-          </p>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {isSignup && (
               <div>
-                <label className="block text-xs font-medium mb-1.5 text-[hsl(var(--muted-foreground))]">Username</label>
+                <label className="block text-xs font-bold mb-1.5" style={{ color: "#44403c" }}>Username</label>
                 <input
                   {...register("username")}
                   type="text"
-                  placeholder="Choose a username"
-                  className="w-full bg-[hsl(var(--input))] border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-500 transition-colors"
+                  placeholder="e.g. alex_travels"
+                  style={fieldStyle as any}
+                  onFocus={e => (e.target.style.borderColor = "#0d9488")}
+                  onBlur={e => (e.target.style.borderColor = "#e8e0d5")}
                 />
               </div>
             )}
 
             <div>
-              <label className="block text-xs font-medium mb-1.5 text-[hsl(var(--muted-foreground))]">Email</label>
+              <label className="block text-xs font-bold mb-1.5" style={{ color: "#44403c" }}>Email</label>
               <input
                 {...register("email")}
                 type="email"
                 placeholder="you@example.com"
-                className="w-full bg-[hsl(var(--input))] border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-500 transition-colors"
+                style={fieldStyle as any}
+                onFocus={e => (e.target.style.borderColor = "#0d9488")}
+                onBlur={e => (e.target.style.borderColor = "#e8e0d5")}
               />
-              {errors.email && <p className="text-xs text-red-400 mt-1">{errors.email.message}</p>}
+              {errors.email && <p className="text-xs mt-1 font-medium" style={{ color: "#dc2626" }}>{errors.email.message}</p>}
             </div>
 
             <div>
-              <label className="block text-xs font-medium mb-1.5 text-[hsl(var(--muted-foreground))]">Password</label>
+              <label className="block text-xs font-bold mb-1.5" style={{ color: "#44403c" }}>Password</label>
               <input
                 {...register("password")}
                 type="password"
                 placeholder="••••••••"
-                className="w-full bg-[hsl(var(--input))] border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-500 transition-colors"
+                style={fieldStyle as any}
+                onFocus={e => (e.target.style.borderColor = "#0d9488")}
+                onBlur={e => (e.target.style.borderColor = "#e8e0d5")}
               />
-              {errors.password && <p className="text-xs text-red-400 mt-1">{errors.password.message}</p>}
+              {errors.password && <p className="text-xs mt-1 font-medium" style={{ color: "#dc2626" }}>{errors.password.message}</p>}
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white py-2.5 rounded-lg text-sm font-medium transition-colors"
-            >
-              {loading ? "Please wait..." : isSignup ? "Create Account" : "Sign In"}
+              className="w-full py-3 rounded-xl text-sm font-bold transition-all mt-2"
+              style={{
+                background: loading ? "#a8a29e" : "#0d9488",
+                color: "#ffffff",
+                cursor: loading ? "not-allowed" : "pointer",
+                boxShadow: loading ? "none" : "0 3px 12px rgba(13,148,136,0.3)",
+              }}>
+              {loading ? "Please wait…" : isSignup ? "Create Account" : "Sign In"}
             </button>
           </form>
 
-          <div className="mt-5 text-center text-sm text-[hsl(var(--muted-foreground))]">
-            {isSignup ? "Already have an account?" : "Don't have an account?"}{" "}
-            <button onClick={() => setIsSignup(!isSignup)} className="text-blue-400 hover:text-blue-300 font-medium">
-              {isSignup ? "Sign in" : "Sign up"}
+          <p className="text-center text-sm font-medium pt-1" style={{ color: "#78716c" }}>
+            {isSignup ? "Already have an account? " : "Don't have an account? "}
+            <button
+              onClick={() => setIsSignup(!isSignup)}
+              className="font-bold"
+              style={{ color: "#0d9488" }}>
+              {isSignup ? "Sign in" : "Sign up free"}
             </button>
-          </div>
+          </p>
         </div>
       </div>
     </div>
