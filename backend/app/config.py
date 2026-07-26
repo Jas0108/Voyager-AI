@@ -11,7 +11,7 @@ class Settings:
     DEBUG: bool = os.getenv("DEBUG", "false").lower() == "true"
 
     # Database - Supabase PostgreSQL
-    DATABASE_URL: str = os.getenv("DATABASE_URL")
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "")
 
     # JWT
     JWT_SECRET: str = os.getenv("JWT_SECRET", "change-this-secret-in-production")
@@ -30,8 +30,13 @@ class Settings:
     OPENROUTESERVICE_API_KEY: str = os.getenv("OPENROUTESERVICE_API_KEY", "")
     EXCHANGERATE_API_KEY: str = os.getenv("EXCHANGERATE_API_KEY", "")
 
-    # CORS
-    CORS_ORIGINS: list = ["http://localhost:3000", "http://127.0.0.1:3000"]
+    # CORS - allow all origins in production/dev
+    @property
+    def cors_origins_list(self) -> list:
+        raw = os.getenv("CORS_ORIGINS", "*")
+        if raw == "*":
+            return ["*"]
+        return [origin.strip() for origin in raw.split(",") if origin.strip()]
 
 
 settings = Settings()
