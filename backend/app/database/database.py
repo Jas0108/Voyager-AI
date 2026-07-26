@@ -5,8 +5,11 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# Strip any accidental newlines or trailing whitespace from environment variable
+clean_db_url = (settings.DATABASE_URL or "").strip()
+
 engine = create_engine(
-    settings.DATABASE_URL,
+    clean_db_url,
     echo=settings.DEBUG,
     pool_pre_ping=True,
     pool_recycle=300,
