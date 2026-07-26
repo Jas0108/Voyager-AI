@@ -1,0 +1,98 @@
+[
+  {
+    "id": 1,
+    "query": "Plan a 5-day itinerary for my Tokyo trip.",
+    "expected_agents": ["planning"],
+    "expected_tools": [],
+    "description": "Pure planning request — single agent, no budget or discovery needed.",
+    "category": "planning_only"
+  },
+  {
+    "id": 2,
+    "query": "Find me some good cafes and restaurants nearby.",
+    "expected_agents": ["discovery"],
+    "expected_tools": [],
+    "description": "Pure discovery request — nearby place search only.",
+    "category": "discovery_only"
+  },
+  {
+    "id": 3,
+    "query": "How much budget do I have remaining for this trip?",
+    "expected_agents": ["budget"],
+    "expected_tools": [],
+    "description": "Pure budget query — checking remaining budget.",
+    "category": "budget_only"
+  },
+  {
+    "id": 4,
+    "query": "Plan my Rome itinerary and check if it fits within my budget.",
+    "expected_agents": ["planning", "budget"],
+    "expected_tools": [],
+    "description": "Planning with budget validation — two agents must collaborate.",
+    "category": "planning_budget"
+  },
+  {
+    "id": 5,
+    "query": "Create a day-by-day schedule and recommend restaurants for each day.",
+    "expected_agents": ["planning", "discovery"],
+    "expected_tools": [],
+    "description": "Planning with discovery — itinerary plus restaurant recommendations.",
+    "category": "planning_discovery"
+  },
+  {
+    "id": 6,
+    "query": "Show me my spending breakdown and find cheap restaurants nearby.",
+    "expected_agents": ["budget", "discovery"],
+    "expected_tools": [],
+    "description": "Budget review followed by budget-conscious discovery.",
+    "category": "budget_discovery"
+  },
+  {
+    "id": 7,
+    "query": "Plan my entire trip, find nearby attractions, and make sure everything fits my budget.",
+    "expected_agents": ["planning", "budget", "discovery"],
+    "expected_tools": [],
+    "description": "Full three-agent pipeline — planning, budget, and discovery all needed.",
+    "category": "all_agents"
+  },
+  {
+    "id": 8,
+    "query": "What's the weather like in Barcelona right now?",
+    "expected_agents": ["planning"],
+    "expected_tools": [],
+    "description": "Weather-only query — handled by planning agent's weather capability.",
+    "category": "planning_only"
+  },
+  {
+    "id": 9,
+    "query": "Change my day 3 afternoon to visit a museum instead.",
+    "expected_agents": ["planning"],
+    "expected_tools": [],
+    "description": "Itinerary modification — planning agent updates existing itinerary.",
+    "category": "planning_only"
+  },
+  {
+    "id": 10,
+    "query": "I spent 150 dollars on dinner last night, add that to my expenses.",
+    "expected_agents": ["budget"],
+    "expected_tools": [],
+    "description": "Expense tracking — budget agent parses and records the expense.",
+    "category": "budget_only"
+  },
+  {
+    "id": 11,
+    "query": "What are the best places to visit and top tourist attractions here?",
+    "expected_agents": ["planning"],
+    "expected_tools": [],
+    "description": "Sightseeing query — routed to planning for attractions-based itinerary.",
+    "category": "planning_only"
+  },
+  {
+    "id": 12,
+    "query": "Hello! How are you doing today?",
+    "expected_agents": [],
+    "expected_tools": [],
+    "description": "Casual greeting — supervisor should respond directly without any agents.",
+    "category": "direct_response"
+  }
+]

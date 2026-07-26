@@ -1,0 +1,82 @@
+[
+  {
+    "id": 13,
+    "query": "I overspent yesterday on shopping. Can you update my remaining budget and adjust today's itinerary to be more affordable?",
+    "expected_agents": ["budget", "planning"],
+    "expected_tools": [],
+    "description": "Budget overspend triggers replanning — budget agent first, then planning adjusts.",
+    "category": "budget_then_planning"
+  },
+  {
+    "id": 14,
+    "query": "Recommend me a good lunch spot that fits within my remaining budget.",
+    "expected_agents": ["budget", "discovery"],
+    "expected_tools": [],
+    "description": "Budget-aware discovery — check budget first, then find affordable places.",
+    "category": "budget_then_discovery"
+  },
+  {
+    "id": 15,
+    "query": "It looks like it might rain today. Suggest some indoor activities and replan my afternoon.",
+    "expected_agents": ["planning", "discovery"],
+    "expected_tools": [],
+    "description": "Weather change triggers replanning and indoor place discovery.",
+    "category": "planning_then_discovery"
+  },
+  {
+    "id": 16,
+    "query": "Plan my entire 7-day Bali trip under my remaining budget and suggest must-visit attractions along the way.",
+    "expected_agents": ["planning", "budget", "discovery"],
+    "expected_tools": [],
+    "description": "Full orchestration — planning builds itinerary, budget validates, discovery recommends.",
+    "category": "full_pipeline"
+  },
+  {
+    "id": 17,
+    "query": "I just spent 80 euros on a museum ticket. Now find me a cheap place to eat nearby.",
+    "expected_agents": ["budget", "discovery"],
+    "expected_tools": [],
+    "description": "Expense recording followed by cost-conscious restaurant search.",
+    "category": "expense_then_discovery"
+  },
+  {
+    "id": 18,
+    "query": "Create a detailed itinerary for tomorrow and tell me how much budget I'll need for it.",
+    "expected_agents": ["planning", "budget"],
+    "expected_tools": [],
+    "description": "Planning creates itinerary, budget estimates daily cost.",
+    "category": "planning_then_budget"
+  },
+  {
+    "id": 19,
+    "query": "Are there any good parks or museums near my hotel? Also check if I can afford entry tickets.",
+    "expected_agents": ["discovery", "budget"],
+    "expected_tools": [],
+    "description": "Discovery finds places, budget checks affordability.",
+    "category": "discovery_then_budget"
+  },
+  {
+    "id": 20,
+    "query": "What's the weather forecast for the next 3 days? Suggest outdoor activities if it's sunny.",
+    "expected_agents": ["planning", "discovery"],
+    "expected_tools": [],
+    "description": "Weather check followed by weather-conditional activity discovery.",
+    "category": "weather_then_discovery"
+  },
+  {
+    "id": 21,
+    "query": "Update my budget to 3000 dollars and replan my trip with the new budget in mind.",
+    "expected_agents": ["budget", "planning"],
+    "expected_tools": [],
+    "description": "Budget update cascades into trip replanning with new constraints.",
+    "category": "budget_update_then_replan"
+  },
+  {
+    "id": 22,
+    "query": "Give me a complete travel plan with daily schedule, nearby restaurant suggestions for each meal, and a full budget breakdown.",
+    "expected_agents": ["planning", "discovery", "budget"],
+    "expected_tools": [],
+    "description": "Comprehensive travel assistant query exercising all three agents.",
+    "category": "full_pipeline"
+  }
+]

@@ -1,0 +1,51 @@
+{
+  "total_tests": 30,
+  "passed": 30,
+  "failed": 0,
+  "routing_precision": 100.0,
+  "routing_recall": 100.0,
+  "routing_accuracy": 100.0,
+  "execution_accuracy": 100.0,
+  "tool_precision": 0.0,
+  "tool_recall": 0.0,
+  "tool_accuracy": 0.0,
+  "overall_latency": {
+    "avg": 15.949,
+    "min": 0.164,
+    "max": 87.447
+  },
+  "supervisor_latency": {
+    "avg": 0.737,
+    "min": 0.068,
+    "max": 8.509
+  },
+  "planning_latency": {
+    "avg": 12.487,
+    "min": 1.127,
+    "max": 61.237
+  },
+  "discovery_latency": {
+    "avg": 13.183,
+    "min": 0.875,
+    "max": 51.072
+  },
+  "budget_latency": {
+    "avg": 1.577,
+    "min": 0.076,
+    "max": 10.636
+  },
+  "agent_usage": {
+    "planning": 17,
+    "discovery": 13,
+    "budget": 15
+  },
+  "response_valid_rate": 100.0,
+  "response_quality": {
+    "avg_relevance": 3.44,
+    "avg_completeness": 2.78,
+    "avg_helpfulness": 3.11,
+    "total_judged": 9
+  },
+  "success_rate": 100.0,
+  "failed_tests": []
+}

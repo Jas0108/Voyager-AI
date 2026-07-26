@@ -1,0 +1,74 @@
+[
+  {
+    "id": 23,
+    "query": "",
+    "expected_agents": [],
+    "expected_tools": [],
+    "description": "Empty query — system should handle gracefully without crashing.",
+    "category": "edge_case",
+    "expected_behavior": "graceful_fallback"
+  },
+  {
+    "id": 24,
+    "query": "Plan a trip to Atlantis, the lost underwater city.",
+    "expected_agents": ["planning"],
+    "expected_tools": [],
+    "description": "Unknown/fictional destination — planning agent should handle gracefully.",
+    "category": "edge_case",
+    "expected_behavior": "graceful_handling"
+  },
+  {
+    "id": 25,
+    "query": "Set my budget to -5000 dollars.",
+    "expected_agents": ["budget"],
+    "expected_tools": [],
+    "description": "Negative budget value — budget agent should reject or handle safely.",
+    "category": "edge_case",
+    "expected_behavior": "error_handling"
+  },
+  {
+    "id": 26,
+    "query": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Can you plan my trip and find restaurants and check my budget? I really need a comprehensive travel plan that covers every single aspect of my journey including morning activities, afternoon excursions, evening dining, weather considerations, budget allocations, and nearby attraction recommendations for each day.",
+    "expected_agents": ["planning", "discovery", "budget"],
+    "expected_tools": [],
+    "description": "Very long prompt with embedded valid request — system should parse intent despite noise.",
+    "category": "edge_case",
+    "expected_behavior": "handles_long_input"
+  },
+  {
+    "id": 27,
+    "query": "Plan my trip from January 35th to February 30th.",
+    "expected_agents": ["planning"],
+    "expected_tools": [],
+    "description": "Invalid dates — system should still attempt planning without crashing.",
+    "category": "edge_case",
+    "expected_behavior": "graceful_handling"
+  },
+  {
+    "id": 28,
+    "query": "The quick brown fox jumps over the lazy dog.",
+    "expected_agents": [],
+    "expected_tools": [],
+    "description": "No travel intent whatsoever — supervisor should give a direct response.",
+    "category": "edge_case",
+    "expected_behavior": "direct_response"
+  },
+  {
+    "id": 29,
+    "query": "<script>alert('xss')</script> DROP TABLE trips; -- find restaurants",
+    "expected_agents": ["discovery"],
+    "expected_tools": [],
+    "description": "Injection attempt with valid intent — should handle safely and still find restaurants.",
+    "category": "edge_case",
+    "expected_behavior": "safe_handling"
+  },
+  {
+    "id": 30,
+    "query": "Do something travel related maybe?",
+    "expected_agents": [],
+    "expected_tools": [],
+    "description": "Ambiguous query with no clear intent — supervisor should ask for clarification or give direct response.",
+    "category": "edge_case",
+    "expected_behavior": "graceful_fallback"
+  }
+]

@@ -1,0 +1,1116 @@
+{
+  "timestamp": "2026-07-26T13:59:37.351196",
+  "metrics": {
+    "total_tests": 30,
+    "passed": 30,
+    "failed": 0,
+    "routing_precision": 100.0,
+    "routing_recall": 100.0,
+    "routing_accuracy": 100.0,
+    "execution_accuracy": 100.0,
+    "tool_precision": 0.0,
+    "tool_recall": 0.0,
+    "tool_accuracy": 0.0,
+    "overall_latency": {
+      "avg": 15.949,
+      "min": 0.164,
+      "max": 87.447
+    },
+    "supervisor_latency": {
+      "avg": 0.737,
+      "min": 0.068,
+      "max": 8.509
+    },
+    "planning_latency": {
+      "avg": 12.487,
+      "min": 1.127,
+      "max": 61.237
+    },
+    "discovery_latency": {
+      "avg": 13.183,
+      "min": 0.875,
+      "max": 51.072
+    },
+    "budget_latency": {
+      "avg": 1.577,
+      "min": 0.076,
+      "max": 10.636
+    },
+    "agent_usage": {
+      "planning": 17,
+      "discovery": 13,
+      "budget": 15
+    },
+    "response_valid_rate": 100.0,
+    "response_quality": {
+      "avg_relevance": 3.44,
+      "avg_completeness": 2.78,
+      "avg_helpfulness": 3.11,
+      "total_judged": 9
+    },
+    "success_rate": 100.0,
+    "failed_tests": []
+  },
+  "results": [
+    {
+      "test_id": 1,
+      "query": "Plan a 5-day itinerary for my Tokyo trip.",
+      "description": "Pure planning request — single agent, no budget or discovery needed.",
+      "category": "planning_only",
+      "timestamp": "2026-07-26T13:50:47.143682",
+      "expected_agents": [
+        "planning"
+      ],
+      "actual_agents": [
+        "planning"
+      ],
+      "routing_correct": true,
+      "expected_tools": [],
+      "actual_tools": [
+        "get_weather",
+        "get_attractions",
+        "optimize_route"
+      ],
+      "execution_order": [
+        "planning"
+      ],
+      "tools_used": [
+        "get_weather",
+        "get_attractions",
+        "optimize_route"
+      ],
+      "total_latency": 21.357,
+      "supervisor_latency": 0.773,
+      "planning_latency": 11.878,
+      "discovery_latency": 0.0,
+      "budget_latency": 0.0,
+      "response_text": "Since you're currently in Paris, I'll need to generate a new itinerary for you here. The one I have is for a different destination, so let's start fresh. What would you like to do in Paris for the next 5 days?",
+      "response_valid": true,
+      "judge_scores": {
+        "relevance": 1.0,
+        "completeness": 1.0,
+        "helpfulness": 1.0,
+        "reasoning": "The assistant's response is completely off-topic, as it mentions Paris instead of Tokyo and fails to provide any information relevant to the user's query about planning a Tokyo trip."
+      },
+      "success": true,
+      "failure_reason": ""
+    },
+    {
+      "test_id": 2,
+      "query": "Find me some good cafes and restaurants nearby.",
+      "description": "Pure discovery request — nearby place search only.",
+      "category": "discovery_only",
+      "timestamp": "2026-07-26T13:51:18.030165",
+      "expected_agents": [
+        "discovery"
+      ],
+      "actual_agents": [
+        "discovery"
+      ],
+      "routing_correct": true,
+      "expected_tools": [],
+      "actual_tools": [],
+      "execution_order": [
+        "discovery"
+      ],
+      "tools_used": [],
+      "total_latency": 28.156,
+      "supervisor_latency": 4.484,
+      "planning_latency": 0.0,
+      "discovery_latency": 22.668,
+      "budget_latency": 0.0,
+      "response_text": "You're looking for some great cafes and restaurants in Paris. I've got a few recommendations for you. Check out Uno, a restaurant on Rue Berger that's open till midnight. There's also Café des Musées on Rue de Turenne, which serves up great food from noon to 11:30 PM. If you're in the mood for something sweet, Manteigaria - Fábrica de Pastéis de Nata Rambuteau on Rue Rambuteau is a must-visit, open from 8 AM to 8 PM. And for a unique dining experience, head to 404 on Rue des Gravilliers, which has a interesting schedule but is definitely worth a try. Enjoy exploring the Parisian food scene!",
+      "response_valid": true,
+      "judge_scores": {
+        "relevance": 5.0,
+        "completeness": 5.0,
+        "helpfulness": 5.0,
+        "reasoning": "The assistant directly addresses the user's query by providing specific recommendations for cafes and restaurants, including their locations and operating hours, making the response highly relevant, complete, and helpful for a traveler in Paris."
+      },
+      "success": true,
+      "failure_reason": ""
+    },
+    {
+      "test_id": 3,
+      "query": "How much budget do I have remaining for this trip?",
+      "description": "Pure budget query — checking remaining budget.",
+      "category": "budget_only",
+      "timestamp": "2026-07-26T13:51:46.597005",
+      "expected_agents": [
+        "budget"
+      ],
+      "actual_agents": [
+        "budget"
+      ],
+      "routing_correct": true,
+      "expected_tools": [],
+      "actual_tools": [],
+      "execution_order": [
+        "budget"
+      ],
+      "tools_used": [],
+      "total_latency": 1.329,
+      "supervisor_latency": 0.299,
+      "planning_latency": 0.0,
+      "discovery_latency": 0.0,
+      "budget_latency": 0.504,
+      "response_text": "You've got a budget of $2000 for your trip, and the good news is you haven't spent any of it yet, so you've still got the full $2000 remaining.",
+      "response_valid": true,
+      "judge_scores": {
+        "relevance": 5.0,
+        "completeness": 5.0,
+        "helpfulness": 5.0,
+        "reasoning": "The response directly addresses the user's query, provides a clear and complete answer, and gives the user a specific and actionable piece of information about their remaining budget."
+      },
+      "success": true,
+      "failure_reason": ""
+    },
+    {
+      "test_id": 4,
+      "query": "Plan my Rome itinerary and check if it fits within my budget.",
+      "description": "Planning with budget validation — two agents must collaborate.",
+      "category": "planning_budget",
+      "timestamp": "2026-07-26T13:51:50.386991",
+      "expected_agents": [
+        "planning",
+        "budget"
+      ],
+      "actual_agents": [
+        "budget",
+        "planning"
+      ],
+      "routing_correct": true,
+      "expected_tools": [],
+      "actual_tools": [
+        "get_weather",
+        "get_attractions",
+        "optimize_route"
+      ],
+      "execution_order": [
+        "budget",
+        "planning"
+      ],
+      "tools_used": [
+        "get_weather",
+        "get_attractions",
+        "optimize_route"
+      ],
+      "total_latency": 87.447,
+      "supervisor_latency": 0.276,
+      "planning_latency": 61.237,
+      "discovery_latency": 0.0,
+      "budget_latency": 5.549,
+      "response_text": "Since your current focus is on your budget, I'll need to generate a new itinerary that fits within your budget of $2000. The previously planned itinerary was for Rome, but that doesn't match your current destination. Let's start fresh and plan a new trip that suits your budget and preferences. What type of trip are you thinking of?",
+      "response_valid": true,
+      "judge_scores": {
+        "relevance": 2.0,
+        "completeness": 1.0,
+        "helpfulness": 1.0,
+        "reasoning": "The response does not directly address the user's query about planning a Rome itinerary, instead it seems to be confused about the destination and starts over, asking for new information without providing any relevant or useful information about Rome or the budget."
+      },
+      "success": true,
+      "failure_reason": ""
+    },
+    {
+      "test_id": 5,
+      "query": "Create a day-by-day schedule and recommend restaurants for each day.",
+      "description": "Planning with discovery — itinerary plus restaurant recommendations.",
+      "category": "planning_discovery",
+      "timestamp": "2026-07-26T13:53:19.371802",
+      "expected_agents": [
+        "planning",
+        "discovery"
+      ],
+      "actual_agents": [
+        "planning",
+        "discovery"
+      ],
+      "routing_correct": true,
+      "expected_tools": [],
+      "actual_tools": [
+        "get_weather",
+        "get_attractions",
+        "optimize_route"
+      ],
+      "execution_order": [
+        "planning",
+        "discovery"
+      ],
+      "tools_used": [
+        "get_weather",
+        "get_attractions",
+        "optimize_route"
+      ],
+      "total_latency": 82.632,
+      "supervisor_latency": 5.416,
+      "planning_latency": 57.903,
+      "discovery_latency": 12.851,
+      "budget_latency": 0.0,
+      "response_text": "I've got a day-by-day schedule for you in Paris, along with some great restaurant recommendations. \n\nOn day 1, you'll visit Point zéro des routes de France and explore Notre Dame, then take a sunset walk at Pont au Double. For dinner, consider Uno or Chez Denise. \n\nDay 2 takes you to the Archeological crypt of the île de la Cité and Église Saint-Jean-le-Rond de Paris, with dinner at Le Comptoir du Relais. \n\nDay 3 is all about Sainte-Geneviève-des-Ardents and Palais épiscopal de Paris, followed by a river cruise on the Seine. You could grab dinner at Le Petit Marché or Café des Musées.\n\nThe rest of the week is just as exciting, with visits to Chapelle Saint-Christophe de Paris, Ancienne cathédrale Saint-Étienne de Paris, and Cathédrale primitive Notre-Dame de Paris. Be sure to try Le Grand Vefour or La Robe et le Palais for dinner on day 4. \n\nFor the last few days, you've got Église Sainte-Marine, Pont Saint-Charles, and another visit to Point zéro des routes de France and Notre Dame. Don't miss dinner at Le Petit Châtelet or 404. \n\nEnjoy your time in Paris, and don't hesitate to reach out if you need more recommendations or have any questions!",
+      "response_valid": true,
+      "judge_scores": {
+        "relevance": 5.0,
+        "completeness": 4.0,
+        "helpfulness": 5.0,
+        "reasoning": "The response directly addresses the user's query by providing a day-by-day schedule and recommending restaurants for each day. It covers various aspects of the query, including activities and dining options. However, it could be improved by providing more detailed information about each location and restaurant, such as opening hours, prices, and dress code. Overall, the response is very helpful and provides actionable recommendations for a real traveler."
+      },
+      "success": true,
+      "failure_reason": ""
+    },
+    {
+      "test_id": 6,
+      "query": "Show me my spending breakdown and find cheap restaurants nearby.",
+      "description": "Budget review followed by budget-conscious discovery.",
+      "category": "budget_discovery",
+      "timestamp": "2026-07-26T13:54:42.623780",
+      "expected_agents": [
+        "budget",
+        "discovery"
+      ],
+      "actual_agents": [
+        "budget",
+        "discovery"
+      ],
+      "routing_correct": true,
+      "expected_tools": [],
+      "actual_tools": [],
+      "execution_order": [
+        "budget",
+        "discovery"
+      ],
+      "tools_used": [],
+      "total_latency": 24.661,
+      "supervisor_latency": 8.509,
+      "planning_latency": 0.0,
+      "discovery_latency": 2.572,
+      "budget_latency": 5.493,
+      "response_text": "You're looking for some affordable dining options in Paris. I've got a few suggestions for you. There's Uno, a restaurant on Rue Berger that's open till midnight. You could also try Chez Denise, which is open late into the night. For a more casual vibe, Café des Musées is a great spot, and they're open for lunch and dinner. If you're in the mood for something sweet, Manteigaria - Fábrica de Pastéis de Nata Rambuteau is a great place to try some pastries. \n\nAs for your spending breakdown, you've got a budget of $2000 and you haven't spent anything yet, so you're all set. Your remaining budget is still $2000.",
+      "response_valid": true,
+      "judge_scores": {
+        "relevance": 4.0,
+        "completeness": 3.0,
+        "helpfulness": 4.0,
+        "reasoning": "The response is relevant as it provides cheap restaurant options and a spending breakdown. However, completeness is lacking because it doesn't provide a detailed breakdown of spending categories, only stating that no money has been spent. The response is helpful as it offers actionable suggestions for affordable dining, but could be improved with more detailed financial information."
+      },
+      "success": true,
+      "failure_reason": ""
+    },
+    {
+      "test_id": 7,
+      "query": "Plan my entire trip, find nearby attractions, and make sure everything fits my budget.",
+      "description": "Full three-agent pipeline — planning, budget, and discovery all needed.",
+      "category": "all_agents",
+      "timestamp": "2026-07-26T13:55:10.054815",
+      "expected_agents": [
+        "planning",
+        "budget",
+        "discovery"
+      ],
+      "actual_agents": [
+        "budget",
+        "planning",
+        "discovery"
+      ],
+      "routing_correct": true,
+      "expected_tools": [],
+      "actual_tools": [
+        "get_weather",
+        "get_attractions",
+        "optimize_route",
+        "get_attractions"
+      ],
+      "execution_order": [
+        "budget",
+        "planning",
+        "discovery"
+      ],
+      "tools_used": [
+        "get_weather",
+        "get_attractions",
+        "optimize_route",
+        "get_attractions"
+      ],
+      "total_latency": 64.314,
+      "supervisor_latency": 0.397,
+      "planning_latency": 38.753,
+      "discovery_latency": 13.383,
+      "budget_latency": 10.636,
+      "response_text": "I've got your entire trip to Paris planned out. You've got a 7-day itinerary ahead of you, with each day filled with exploring the main sights, visiting museums and cultural landmarks, and experiencing the local dining and nightlife scene. \n\nAs for nearby attractions, I found a few spots you might want to check out, like the Musée des Arts et Météiers, Maison de Victor Hugo, and the Maison européenne de la Photographie. These places have specific opening hours, so be sure to check those in advance.\n\nYour budget is looking good, with $2000 remaining, and the weather forecast is perfect for outdoor activities. If you're looking for more specific recommendations, feel free to ask me about restaurants, cafes, or anything else you're interested in.",
+      "response_valid": true,
+      "judge_scores": {
+        "relevance": 5.0,
+        "completeness": 4.0,
+        "helpfulness": 5.0,
+        "reasoning": "The response directly addresses the user's query by planning their trip, suggesting nearby attractions, and considering their budget. However, it assumes the destination is Paris without the user specifying it, which slightly reduces completeness. The response is still very helpful as it provides a clear itinerary and offers additional recommendations."
+      },
+      "success": true,
+      "failure_reason": ""
+    },
+    {
+      "test_id": 8,
+      "query": "What's the weather like in Barcelona right now?",
+      "description": "Weather-only query — handled by planning agent's weather capability.",
+      "category": "planning_only",
+      "timestamp": "2026-07-26T13:56:14.898328",
+      "expected_agents": [
+        "planning"
+      ],
+      "actual_agents": [
+        "planning"
+      ],
+      "routing_correct": true,
+      "expected_tools": [],
+      "actual_tools": [],
+      "execution_order": [
+        "planning"
+      ],
+      "tools_used": [],
+      "total_latency": 1.318,
+      "supervisor_latency": 0.081,
+      "planning_latency": 1.127,
+      "discovery_latency": 0.0,
+      "budget_latency": 0.0,
+      "response_text": "I'm here to help! You can ask me to find restaurants or places nearby, check the weather, plan your itinerary, or manage your budget.",
+      "response_valid": true,
+      "judge_scores": null,
+      "success": true,
+      "failure_reason": ""
+    },
+    {
+      "test_id": 9,
+      "query": "Change my day 3 afternoon to visit a museum instead.",
+      "description": "Itinerary modification — planning agent updates existing itinerary.",
+      "category": "planning_only",
+      "timestamp": "2026-07-26T13:56:16.304687",
+      "expected_agents": [
+        "planning"
+      ],
+      "actual_agents": [
+        "planning"
+      ],
+      "routing_correct": true,
+      "expected_tools": [],
+      "actual_tools": [
+        "get_attractions"
+      ],
+      "execution_order": [
+        "planning"
+      ],
+      "tools_used": [
+        "get_attractions"
+      ],
+      "total_latency": 3.671,
+      "supervisor_latency": 0.078,
+      "planning_latency": 3.42,
+      "discovery_latency": 0.0,
+      "budget_latency": 0.0,
+      "response_text": "Weather in Paris, France: few clouds, 19.61°C (feels like 19.64°C). Upcoming: 2026-07-26 09:00:00: scattered clouds, 19.46°C; 2026-07-26 12:00:00: broken clouds, 19.26°C; 2026-07-26 15:00:00: broken clouds, 19.42°C I've put together a 7-day itinerary for you.",
+      "response_valid": true,
+      "judge_scores": null,
+      "success": true,
+      "failure_reason": ""
+    },
+    {
+      "test_id": 10,
+      "query": "I spent 150 dollars on dinner last night, add that to my expenses.",
+      "description": "Expense tracking — budget agent parses and records the expense.",
+      "category": "budget_only",
+      "timestamp": "2026-07-26T13:56:20.076992",
+      "expected_agents": [
+        "budget"
+      ],
+      "actual_agents": [
+        "budget"
+      ],
+      "routing_correct": true,
+      "expected_tools": [],
+      "actual_tools": [],
+      "execution_order": [
+        "budget"
+      ],
+      "tools_used": [],
+      "total_latency": 0.306,
+      "supervisor_latency": 0.078,
+      "planning_latency": 0.0,
+      "discovery_latency": 0.0,
+      "budget_latency": 0.094,
+      "response_text": "Remaining budget: 1850.00 USD.",
+      "response_valid": true,
+      "judge_scores": {
+        "relevance": 2.0,
+        "completeness": 1.0,
+        "helpfulness": 1.0,
+        "reasoning": "The response does not directly address the user's request to add the dinner expense to their expenses, and it only provides the remaining budget without showing the updated expenses or acknowledging the addition of the dinner cost."
+      },
+      "success": true,
+      "failure_reason": ""
+    },
+    {
+      "test_id": 11,
+      "query": "What are the best places to visit and top tourist attractions here?",
+      "description": "Sightseeing query — routed to planning for attractions-based itinerary.",
+      "category": "planning_only",
+      "timestamp": "2026-07-26T13:56:20.923429",
+      "expected_agents": [
+        "planning"
+      ],
+      "actual_agents": [
+        "planning"
+      ],
+      "routing_correct": true,
+      "expected_tools": [],
+      "actual_tools": [
+        "get_attractions"
+      ],
+      "execution_order": [
+        "planning"
+      ],
+      "tools_used": [
+        "get_attractions"
+      ],
+      "total_latency": 2.857,
+      "supervisor_latency": 0.086,
+      "planning_latency": 2.68,
+      "discovery_latency": 0.0,
+      "budget_latency": 0.0,
+      "response_text": "I've put together a 7-day itinerary for you.",
+      "response_valid": true,
+      "judge_scores": null,
+      "success": true,
+      "failure_reason": ""
+    },
+    {
+      "test_id": 12,
+      "query": "Hello! How are you doing today?",
+      "description": "Casual greeting — supervisor should respond directly without any agents.",
+      "category": "direct_response",
+      "timestamp": "2026-07-26T13:56:23.878168",
+      "expected_agents": [],
+      "actual_agents": [],
+      "routing_correct": true,
+      "expected_tools": [],
+      "actual_tools": [],
+      "execution_order": [],
+      "tools_used": [],
+      "total_latency": 0.196,
+      "supervisor_latency": 0.091,
+      "planning_latency": 0.0,
+      "discovery_latency": 0.0,
+      "budget_latency": 0.0,
+      "response_text": "I'm here to help! You can ask me to find restaurants or places nearby, check the weather, plan your itinerary, or manage your budget.",
+      "response_valid": true,
+      "judge_scores": null,
+      "success": true,
+      "failure_reason": ""
+    },
+    {
+      "test_id": 13,
+      "query": "I overspent yesterday on shopping. Can you update my remaining budget and adjust today's itinerary to be more affordable?",
+      "description": "Budget overspend triggers replanning — budget agent first, then planning adjusts.",
+      "category": "budget_then_planning",
+      "timestamp": "2026-07-26T13:56:24.157703",
+      "expected_agents": [
+        "budget",
+        "planning"
+      ],
+      "actual_agents": [
+        "planning",
+        "budget"
+      ],
+      "routing_correct": true,
+      "expected_tools": [],
+      "actual_tools": [
+        "get_attractions"
+      ],
+      "execution_order": [
+        "planning",
+        "budget"
+      ],
+      "tools_used": [
+        "get_attractions"
+      ],
+      "total_latency": 3.827,
+      "supervisor_latency": 0.096,
+      "planning_latency": 3.522,
+      "discovery_latency": 0.0,
+      "budget_latency": 0.097,
+      "response_text": "Weather in Paris, France: few clouds, 19.61°C (feels like 19.64°C). Upcoming: 2026-07-26 09:00:00: scattered clouds, 19.46°C; 2026-07-26 12:00:00: broken clouds, 19.26°C; 2026-07-26 15:00:00: broken clouds, 19.42°C I've put together a 7-day itinerary for you. Remaining budget: 2000.00 USD.",
+      "response_valid": true,
+      "judge_scores": null,
+      "success": true,
+      "failure_reason": ""
+    },
+    {
+      "test_id": 14,
+      "query": "Recommend me a good lunch spot that fits within my remaining budget.",
+      "description": "Budget-aware discovery — check budget first, then find affordable places.",
+      "category": "budget_then_discovery",
+      "timestamp": "2026-07-26T13:56:28.066780",
+      "expected_agents": [
+        "budget",
+        "discovery"
+      ],
+      "actual_agents": [
+        "discovery",
+        "budget"
+      ],
+      "routing_correct": true,
+      "expected_tools": [],
+      "actual_tools": [],
+      "execution_order": [
+        "discovery",
+        "budget"
+      ],
+      "tools_used": [],
+      "total_latency": 8.548,
+      "supervisor_latency": 0.076,
+      "planning_latency": 0.0,
+      "discovery_latency": 8.225,
+      "budget_latency": 0.156,
+      "response_text": "Here are some places near fits:\n- Santa Pasta (restaurant)\n- Rouan Thai (restaurant) — 131, Ναυάρχου Νοταρά, Πειραιάς, 18536, GR\n- Αχινός (restaurant) — 51, Ακτή Θεμιστοκλέους, Πειραιάς\n- Βαρούλκο Seaside (restaurant) — 52, Ακτή Αλέξανδρου Κουμουνδούρου, Πειραιάς, 185 33, GR\n- Barong (restaurant) — Μαρίνα Ζέας, Πειραιάς, 18536, GR\n- Flav'ino (restaurant) — 165, Θεάτρου, Πειραιάς, 18535, GR\n- Ο Οντάς (restaurant) — 76, Δημοσθένους Ομηρίδου Σκυλίτση, Πειραιάς, 18533, GR\n- Tribute (restaurant) — 19, Ναυαρίνου\n- Bacaro (restaurant) — Γεωργίου Κασιμάτη, Πειραιάς, 18531\n- Pizza Fan (restaurant) — 54, Γρηγορίου Λαμπράκη, Πειραιάς, 18532 Remaining budget: 2000.00 USD.",
+      "response_valid": true,
+      "judge_scores": null,
+      "success": true,
+      "failure_reason": ""
+    },
+    {
+      "test_id": 15,
+      "query": "It looks like it might rain today. Suggest some indoor activities and replan my afternoon.",
+      "description": "Weather change triggers replanning and indoor place discovery.",
+      "category": "planning_then_discovery",
+      "timestamp": "2026-07-26T13:56:36.694134",
+      "expected_agents": [
+        "planning",
+        "discovery"
+      ],
+      "actual_agents": [
+        "planning",
+        "discovery"
+      ],
+      "routing_correct": true,
+      "expected_tools": [],
+      "actual_tools": [
+        "get_attractions"
+      ],
+      "execution_order": [
+        "planning",
+        "discovery"
+      ],
+      "tools_used": [
+        "get_attractions"
+      ],
+      "total_latency": 4.861,
+      "supervisor_latency": 0.071,
+      "planning_latency": 3.594,
+      "discovery_latency": 1.101,
+      "budget_latency": 0.0,
+      "response_text": "I've put together a 7-day itinerary for you. I couldn't find any places matching your search. Try being more specific with the location.",
+      "response_valid": true,
+      "judge_scores": null,
+      "success": true,
+      "failure_reason": ""
+    },
+    {
+      "test_id": 16,
+      "query": "Plan my entire 7-day Bali trip under my remaining budget and suggest must-visit attractions along the way.",
+      "description": "Full orchestration — planning builds itinerary, budget validates, discovery recommends.",
+      "category": "full_pipeline",
+      "timestamp": "2026-07-26T13:57:12.806462",
+      "expected_agents": [
+        "planning",
+        "budget",
+        "discovery"
+      ],
+      "actual_agents": [
+        "planning",
+        "discovery",
+        "budget"
+      ],
+      "routing_correct": true,
+      "expected_tools": [],
+      "actual_tools": [
+        "get_attractions"
+      ],
+      "execution_order": [
+        "planning",
+        "discovery",
+        "budget"
+      ],
+      "tools_used": [
+        "get_attractions"
+      ],
+      "total_latency": 19.19,
+      "supervisor_latency": 0.101,
+      "planning_latency": 3.81,
+      "discovery_latency": 14.952,
+      "budget_latency": 0.213,
+      "response_text": "Weather in Paris, France: few clouds, 19.61°C (feels like 19.64°C). Upcoming: 2026-07-26 09:00:00: scattered clouds, 19.46°C; 2026-07-26 12:00:00: broken clouds, 19.26°C; 2026-07-26 15:00:00: broken clouds, 19.42°C I've put together a 7-day itinerary for you. Here are some places near Paris, France:\n- Unnamed tourism (tourism) — 8\n- Point zéro des Routes de France (tourism)\n- Musée des Arts et Métiers (tourism) — 60, Rue Réaumur, 75003\n- Maison de Victor Hugo (tourism) — 6, Place des Vosges, Paris, 75004, FR\n- Maison européenne de la Photographie (tourism) — 5-7, Rue de Fourcy, Paris, 75004\n- Robinier du square René Viviani (tourism)\n- Place du Carrousel (tourism)\n- Unnamed tourism (tourism)\n- Unnamed tourism (tourism)\n- Unnamed tourism (tourism) Remaining budget: 2000.00 USD.",
+      "response_valid": true,
+      "judge_scores": null,
+      "success": true,
+      "failure_reason": ""
+    },
+    {
+      "test_id": 17,
+      "query": "I just spent 80 euros on a museum ticket. Now find me a cheap place to eat nearby.",
+      "description": "Expense recording followed by cost-conscious restaurant search.",
+      "category": "expense_then_discovery",
+      "timestamp": "2026-07-26T13:57:32.086537",
+      "expected_agents": [
+        "budget",
+        "discovery"
+      ],
+      "actual_agents": [
+        "discovery",
+        "budget"
+      ],
+      "routing_correct": true,
+      "expected_tools": [],
+      "actual_tools": [],
+      "execution_order": [
+        "discovery",
+        "budget"
+      ],
+      "tools_used": [],
+      "total_latency": 51.434,
+      "supervisor_latency": 0.097,
+      "planning_latency": 0.0,
+      "discovery_latency": 51.072,
+      "budget_latency": 0.174,
+      "response_text": "Here are some places near nearby:\n- Indian Summer (restaurant) — Kilmacud Road Lower\n- China Sichuan (restaurant) — Ballymoss Road, Dublin\n- My Thai (restaurant) — Blackthorn Drive\n- Greens Restaurant (restaurant) — Leopardstown Avenue\n- Monsoon (restaurant) — The Hill, Stillorgan\n- La Dolce Vita (restaurant) — Carmanhall Road, Sandyford Industrial Estate\n- Sushida (restaurant) — 21, Corrig Road\n- Michie Sushi (restaurant)\n- Mao (restaurant) — Old Dublin Road\n- Base Wood Fired Pizza (restaurant) — Old Dublin Road Remaining budget: 1920.00 USD.",
+      "response_valid": true,
+      "judge_scores": null,
+      "success": true,
+      "failure_reason": ""
+    },
+    {
+      "test_id": 18,
+      "query": "Create a detailed itinerary for tomorrow and tell me how much budget I'll need for it.",
+      "description": "Planning creates itinerary, budget estimates daily cost.",
+      "category": "planning_then_budget",
+      "timestamp": "2026-07-26T13:58:23.603535",
+      "expected_agents": [
+        "planning",
+        "budget"
+      ],
+      "actual_agents": [
+        "planning",
+        "budget"
+      ],
+      "routing_correct": true,
+      "expected_tools": [],
+      "actual_tools": [
+        "get_attractions"
+      ],
+      "execution_order": [
+        "planning",
+        "budget"
+      ],
+      "tools_used": [
+        "get_attractions"
+      ],
+      "total_latency": 4.144,
+      "supervisor_latency": 0.078,
+      "planning_latency": 3.819,
+      "discovery_latency": 0.0,
+      "budget_latency": 0.082,
+      "response_text": "Weather in Paris, France: few clouds, 19.61°C (feels like 19.64°C). Upcoming: 2026-07-26 09:00:00: scattered clouds, 19.46°C; 2026-07-26 12:00:00: broken clouds, 19.26°C; 2026-07-26 15:00:00: broken clouds, 19.42°C I've put together a 7-day itinerary for you. Remaining budget: 2000.00 USD.",
+      "response_valid": true,
+      "judge_scores": null,
+      "success": true,
+      "failure_reason": ""
+    },
+    {
+      "test_id": 19,
+      "query": "Are there any good parks or museums near my hotel? Also check if I can afford entry tickets.",
+      "description": "Discovery finds places, budget checks affordability.",
+      "category": "discovery_then_budget",
+      "timestamp": "2026-07-26T13:58:27.832590",
+      "expected_agents": [
+        "discovery",
+        "budget"
+      ],
+      "actual_agents": [
+        "discovery",
+        "budget"
+      ],
+      "routing_correct": true,
+      "expected_tools": [],
+      "actual_tools": [],
+      "execution_order": [
+        "discovery",
+        "budget"
+      ],
+      "tools_used": [],
+      "total_latency": 35.926,
+      "supervisor_latency": 0.079,
+      "planning_latency": 0.0,
+      "discovery_latency": 35.504,
+      "budget_latency": 0.222,
+      "response_text": "I couldn't find any places matching your search. Try being more specific with the location. Remaining budget: 2000.00 USD.",
+      "response_valid": true,
+      "judge_scores": {
+        "relevance": 2.0,
+        "completeness": 1.0,
+        "helpfulness": 1.0,
+        "reasoning": "The response does not directly address the user's query about parks or museums near their hotel, and it does not provide any information about entry tickets or affordability. It only mentions being unable to find places and provides the remaining budget, which is not relevant to the user's question."
+      },
+      "success": true,
+      "failure_reason": ""
+    },
+    {
+      "test_id": 20,
+      "query": "What's the weather forecast for the next 3 days? Suggest outdoor activities if it's sunny.",
+      "description": "Weather check followed by weather-conditional activity discovery.",
+      "category": "weather_then_discovery",
+      "timestamp": "2026-07-26T13:59:04.159145",
+      "expected_agents": [
+        "planning",
+        "discovery"
+      ],
+      "actual_agents": [
+        "planning",
+        "discovery"
+      ],
+      "routing_correct": true,
+      "expected_tools": [],
+      "actual_tools": [
+        "get_attractions"
+      ],
+      "execution_order": [
+        "planning",
+        "discovery"
+      ],
+      "tools_used": [
+        "get_attractions"
+      ],
+      "total_latency": 3.454,
+      "supervisor_latency": 0.083,
+      "planning_latency": 2.382,
+      "discovery_latency": 0.875,
+      "budget_latency": 0.0,
+      "response_text": "I've put together a 7-day itinerary for you. I couldn't find any places matching your search. Try being more specific with the location.",
+      "response_valid": true,
+      "judge_scores": null,
+      "success": true,
+      "failure_reason": ""
+    },
+    {
+      "test_id": 21,
+      "query": "Update my budget to 3000 dollars and replan my trip with the new budget in mind.",
+      "description": "Budget update cascades into trip replanning with new constraints.",
+      "category": "budget_update_then_replan",
+      "timestamp": "2026-07-26T13:59:07.716718",
+      "expected_agents": [
+        "budget",
+        "planning"
+      ],
+      "actual_agents": [
+        "planning",
+        "budget"
+      ],
+      "routing_correct": true,
+      "expected_tools": [],
+      "actual_tools": [
+        "get_attractions"
+      ],
+      "execution_order": [
+        "planning",
+        "budget"
+      ],
+      "tools_used": [
+        "get_attractions"
+      ],
+      "total_latency": 4.188,
+      "supervisor_latency": 0.082,
+      "planning_latency": 3.904,
+      "discovery_latency": 0.0,
+      "budget_latency": 0.097,
+      "response_text": "Weather in mind: overcast clouds, 22.89°C (feels like 21.91°C). Upcoming: 2026-07-26 09:00:00: overcast clouds, 22.91°C; 2026-07-26 12:00:00: light rain, 22.14°C; 2026-07-26 15:00:00: light rain, 20.77°C I've put together a 7-day itinerary for you. Done! Your budget is now 3000.00 USD. Remaining budget: 3000.00 USD.",
+      "response_valid": true,
+      "judge_scores": null,
+      "success": true,
+      "failure_reason": ""
+    },
+    {
+      "test_id": 22,
+      "query": "Give me a complete travel plan with daily schedule, nearby restaurant suggestions for each meal, and a full budget breakdown.",
+      "description": "Comprehensive travel assistant query exercising all three agents.",
+      "category": "full_pipeline",
+      "timestamp": "2026-07-26T13:59:11.991260",
+      "expected_agents": [
+        "planning",
+        "discovery",
+        "budget"
+      ],
+      "actual_agents": [
+        "planning",
+        "discovery",
+        "budget"
+      ],
+      "routing_correct": true,
+      "expected_tools": [],
+      "actual_tools": [
+        "get_attractions"
+      ],
+      "execution_order": [
+        "planning",
+        "discovery",
+        "budget"
+      ],
+      "tools_used": [
+        "get_attractions"
+      ],
+      "total_latency": 7.13,
+      "supervisor_latency": 0.107,
+      "planning_latency": 3.582,
+      "discovery_latency": 3.19,
+      "budget_latency": 0.154,
+      "response_text": "Weather in Paris, France: few clouds, 19.61°C (feels like 19.64°C). Upcoming: 2026-07-26 09:00:00: scattered clouds, 19.46°C; 2026-07-26 12:00:00: broken clouds, 19.26°C; 2026-07-26 15:00:00: broken clouds, 19.42°C I've put together a 7-day itinerary for you. Here are some places near Paris, France:\n- Uno (restaurant) — 37, Rue Berger, Paris, 75001\n- Chez Denise (restaurant)\n- La Robe et le Palais (restaurant)\n- Le Petit Marché (restaurant) — 9, Rue de Béarn, Paris\n- Café des Musées (restaurant) — 49, Rue de Turenne\n- Camille (restaurant) — 24, Rue des Francs Bourgeois\n- Les Enfants Rouges (restaurant)\n- 404 (restaurant) — 69, Rue des Gravilliers, 75003\n- Lémoni Café (restaurant)\n- O' Scià (restaurant) Remaining budget: 2000.00 USD.",
+      "response_valid": true,
+      "judge_scores": null,
+      "success": true,
+      "failure_reason": ""
+    },
+    {
+      "test_id": 23,
+      "query": "",
+      "description": "Empty query — system should handle gracefully without crashing.",
+      "category": "edge_case",
+      "timestamp": "2026-07-26T13:59:19.204903",
+      "expected_agents": [],
+      "actual_agents": [],
+      "routing_correct": true,
+      "expected_tools": [],
+      "actual_tools": [],
+      "execution_order": [],
+      "tools_used": [],
+      "total_latency": 0.241,
+      "supervisor_latency": 0.08,
+      "planning_latency": 0.0,
+      "discovery_latency": 0.0,
+      "budget_latency": 0.0,
+      "response_text": "I'm here to help! You can ask me to find restaurants or places nearby, check the weather, plan your itinerary, or manage your budget.",
+      "response_valid": true,
+      "judge_scores": null,
+      "success": true,
+      "failure_reason": ""
+    },
+    {
+      "test_id": 24,
+      "query": "Plan a trip to Atlantis, the lost underwater city.",
+      "description": "Unknown/fictional destination — planning agent should handle gracefully.",
+      "category": "edge_case",
+      "timestamp": "2026-07-26T13:59:19.449984",
+      "expected_agents": [
+        "planning"
+      ],
+      "actual_agents": [
+        "planning"
+      ],
+      "routing_correct": true,
+      "expected_tools": [],
+      "actual_tools": [
+        "get_attractions"
+      ],
+      "execution_order": [
+        "planning"
+      ],
+      "tools_used": [
+        "get_attractions"
+      ],
+      "total_latency": 3.721,
+      "supervisor_latency": 0.068,
+      "planning_latency": 3.565,
+      "discovery_latency": 0.0,
+      "budget_latency": 0.0,
+      "response_text": "Weather in Paris, France: few clouds, 19.61°C (feels like 19.64°C). Upcoming: 2026-07-26 09:00:00: scattered clouds, 19.46°C; 2026-07-26 12:00:00: broken clouds, 19.26°C; 2026-07-26 15:00:00: broken clouds, 19.42°C I've put together a 7-day itinerary for you.",
+      "response_valid": true,
+      "judge_scores": null,
+      "success": true,
+      "failure_reason": ""
+    },
+    {
+      "test_id": 25,
+      "query": "Set my budget to -5000 dollars.",
+      "description": "Negative budget value — budget agent should reject or handle safely.",
+      "category": "edge_case",
+      "timestamp": "2026-07-26T13:59:23.244901",
+      "expected_agents": [
+        "budget"
+      ],
+      "actual_agents": [
+        "budget"
+      ],
+      "routing_correct": true,
+      "expected_tools": [],
+      "actual_tools": [],
+      "execution_order": [
+        "budget"
+      ],
+      "tools_used": [],
+      "total_latency": 0.457,
+      "supervisor_latency": 0.073,
+      "planning_latency": 0.0,
+      "discovery_latency": 0.0,
+      "budget_latency": 0.076,
+      "response_text": "Remaining budget: 2000.00 USD.",
+      "response_valid": true,
+      "judge_scores": null,
+      "success": true,
+      "failure_reason": ""
+    },
+    {
+      "test_id": 26,
+      "query": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Can you plan my trip and find restaurants and check my budget? I really need a comprehensive travel plan that covers every single aspect of my journey including morning activities, afternoon excursions, evening dining, weather considerations, budget allocations, and nearby attraction recommendations for each day.",
+      "description": "Very long prompt with embedded valid request — system should parse intent despite noise.",
+      "category": "edge_case",
+      "timestamp": "2026-07-26T13:59:23.786320",
+      "expected_agents": [
+        "planning",
+        "discovery",
+        "budget"
+      ],
+      "actual_agents": [
+        "planning",
+        "discovery",
+        "budget"
+      ],
+      "routing_correct": true,
+      "expected_tools": [],
+      "actual_tools": [
+        "get_attractions"
+      ],
+      "execution_order": [
+        "planning",
+        "discovery",
+        "budget"
+      ],
+      "tools_used": [
+        "get_attractions"
+      ],
+      "total_latency": 5.42,
+      "supervisor_latency": 0.125,
+      "planning_latency": 3.46,
+      "discovery_latency": 1.619,
+      "budget_latency": 0.113,
+      "response_text": "I've put together a 7-day itinerary for you. I couldn't find any places matching your search. Try being more specific with the location. Remaining budget: 2000.00 USD.",
+      "response_valid": true,
+      "judge_scores": null,
+      "success": true,
+      "failure_reason": ""
+    },
+    {
+      "test_id": 27,
+      "query": "Plan my trip from January 35th to February 30th.",
+      "description": "Invalid dates — system should still attempt planning without crashing.",
+      "category": "edge_case",
+      "timestamp": "2026-07-26T13:59:29.280209",
+      "expected_agents": [
+        "planning"
+      ],
+      "actual_agents": [
+        "planning"
+      ],
+      "routing_correct": true,
+      "expected_tools": [],
+      "actual_tools": [
+        "get_attractions"
+      ],
+      "execution_order": [
+        "planning"
+      ],
+      "tools_used": [
+        "get_attractions"
+      ],
+      "total_latency": 3.816,
+      "supervisor_latency": 0.08,
+      "planning_latency": 3.636,
+      "discovery_latency": 0.0,
+      "budget_latency": 0.0,
+      "response_text": "Weather in Paris, France: few clouds, 19.61°C (feels like 19.64°C). Upcoming: 2026-07-26 09:00:00: scattered clouds, 19.46°C; 2026-07-26 12:00:00: broken clouds, 19.26°C; 2026-07-26 15:00:00: broken clouds, 19.42°C I've put together a 7-day itinerary for you.",
+      "response_valid": true,
+      "judge_scores": null,
+      "success": true,
+      "failure_reason": ""
+    },
+    {
+      "test_id": 28,
+      "query": "The quick brown fox jumps over the lazy dog.",
+      "description": "No travel intent whatsoever — supervisor should give a direct response.",
+      "category": "edge_case",
+      "timestamp": "2026-07-26T13:59:33.205839",
+      "expected_agents": [],
+      "actual_agents": [],
+      "routing_correct": true,
+      "expected_tools": [],
+      "actual_tools": [],
+      "execution_order": [],
+      "tools_used": [],
+      "total_latency": 0.173,
+      "supervisor_latency": 0.081,
+      "planning_latency": 0.0,
+      "discovery_latency": 0.0,
+      "budget_latency": 0.0,
+      "response_text": "I'm here to help! You can ask me to find restaurants or places nearby, check the weather, plan your itinerary, or manage your budget.",
+      "response_valid": true,
+      "judge_scores": null,
+      "success": true,
+      "failure_reason": ""
+    },
+    {
+      "test_id": 29,
+      "query": "<script>alert('xss')</script> DROP TABLE trips; -- find restaurants",
+      "description": "Injection attempt with valid intent — should handle safely and still find restaurants.",
+      "category": "edge_case",
+      "timestamp": "2026-07-26T13:59:33.453835",
+      "expected_agents": [
+        "discovery"
+      ],
+      "actual_agents": [
+        "discovery"
+      ],
+      "routing_correct": true,
+      "expected_tools": [],
+      "actual_tools": [],
+      "execution_order": [
+        "discovery"
+      ],
+      "tools_used": [],
+      "total_latency": 3.54,
+      "supervisor_latency": 0.08,
+      "planning_latency": 0.0,
+      "discovery_latency": 3.372,
+      "budget_latency": 0.0,
+      "response_text": "Here are some places near Paris, France:\n- Uno (restaurant) — 37, Rue Berger, Paris, 75001\n- Chez Denise (restaurant)\n- La Robe et le Palais (restaurant)\n- Le Petit Marché (restaurant) — 9, Rue de Béarn, Paris\n- Café des Musées (restaurant) — 49, Rue de Turenne\n- Camille (restaurant) — 24, Rue des Francs Bourgeois\n- Les Enfants Rouges (restaurant)\n- 404 (restaurant) — 69, Rue des Gravilliers, 75003\n- Lémoni Café (restaurant)\n- O' Scià (restaurant)",
+      "response_valid": true,
+      "judge_scores": null,
+      "success": true,
+      "failure_reason": ""
+    },
+    {
+      "test_id": 30,
+      "query": "Do something travel related maybe?",
+      "description": "Ambiguous query with no clear intent — supervisor should ask for clarification or give direct response.",
+      "category": "edge_case",
+      "timestamp": "2026-07-26T13:59:37.069274",
+      "expected_agents": [],
+      "actual_agents": [],
+      "routing_correct": true,
+      "expected_tools": [],
+      "actual_tools": [],
+      "execution_order": [],
+      "tools_used": [],
+      "total_latency": 0.164,
+      "supervisor_latency": 0.077,
+      "planning_latency": 0.0,
+      "discovery_latency": 0.0,
+      "budget_latency": 0.0,
+      "response_text": "I'm here to help! You can ask me to find restaurants or places nearby, check the weather, plan your itinerary, or manage your budget.",
+      "response_valid": true,
+      "judge_scores": null,
+      "success": true,
+      "failure_reason": ""
+    }
+  ]
+}
