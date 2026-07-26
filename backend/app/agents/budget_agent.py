@@ -1,6 +1,7 @@
 """
 Budget Agent.
 Tracks budget metrics and applies budget updates requested by the user.
+Persists expenses to database.
 """
 import json
 import logging
@@ -12,6 +13,9 @@ from app.services.llm_service import llm_service
 from app.tools.currency_tool import convert_currency
 from app.tools.budget_tool import calculate_budget
 from app.utils.query_parser import parse_budget_update, parse_expense
+from app.database.database import SessionLocal
+from app.models.expense import Expense
+from app.models.trip import Trip
 
 logger = logging.getLogger(__name__)
 
@@ -22,9 +26,10 @@ def budget_agent_node(state: TripState) -> dict:
     """Budget agent node for LangGraph."""
     logger.info("[BudgetAgent] Starting execution")
     trip = state.get("trip", {})
-    expenses = state.get("expenses", [])
+    expenses = list(state.get("expenses", []))
     total_spent = sum(e.get("amount", 0) for e in expenses)
     total_budget = trip.get("budget", 0)
+    trip_currency = trip.get("currency", "USD")
     remaining = total_budget - total_spent
 
     # Detect and apply budget update requests from the user
@@ -39,26 +44,40 @@ def budget_agent_node(state: TripState) -> dict:
         total_budget = new_budget
         remaining = total_budget - total_spent
         updated_trip["budget"] = new_budget
+        # Persist updated budget to DB
+        _update_trip_budget_db(trip.get("id"), new_budget)
 
-    # Detect expense creation (e.g., "spent 100 on food")
+    # Detect expense creation (e.g., "spent 5000 inr", "spend 100 on food")
     expense_data = parse_expense(state["user_query"])
     if expense_data:
         logger.info(f"[BudgetAgent] Expense detected: {expense_data}")
+        amount = expense_data["amount"]
+        category = expense_data["category"]
+        
+        # Persist expense to database if trip ID is available
+        db_expense_id = _save_expense_to_db(
+            trip_id=trip.get("id"),
+            category=category,
+            amount=amount,
+            currency=trip_currency
+        )
+        
         new_expense = expense_data
-        total_spent += expense_data["amount"]
+        total_spent += amount
         remaining = total_budget - total_spent
-        # Add to expenses list for state
+        
+        # Add to local expenses list
         expenses.append({
-            "id": f"temp_{len(expenses)}",  # Temporary ID
-            "category": expense_data["category"],
-            "amount": expense_data["amount"],
-            "currency": trip.get("currency", "USD")
+            "id": db_expense_id or f"temp_{len(expenses)}",
+            "category": category,
+            "amount": amount,
+            "currency": trip_currency
         })
 
     budget_info = (
-        f"Total Budget: {total_budget} {trip.get('currency', 'USD')}\n"
-        f"Total Spent: {total_spent} {trip.get('currency', 'USD')}\n"
-        f"Remaining: {remaining} {trip.get('currency', 'USD')}\n"
+        f"Total Budget: {total_budget} {trip_currency}\n"
+        f"Total Spent: {total_spent} {trip_currency}\n"
+        f"Remaining: {remaining} {trip_currency}\n"
         f"Trip Start: {trip.get('start_date')}\n"
         f"Trip End: {trip.get('end_date')}\n"
         f"Today: {date.today().isoformat()}\n"
@@ -70,12 +89,12 @@ def budget_agent_node(state: TripState) -> dict:
 
     if budget_update:
         recommendations.append(
-            f"Trip budget updated to {budget_update:.2f} {trip.get('currency', 'USD')}."
+            f"Trip budget updated to {budget_update:,.2f} {trip_currency}."
         )
 
     if new_expense:
         recommendations.append(
-            f"Recorded expense of {new_expense['amount']:.2f} {trip.get('currency', 'USD')} for {new_expense['category']}."
+            f"Recorded expense of {new_expense['amount']:,.2f} {trip_currency} for {new_expense['category']}. Remaining budget: {remaining:,.2f} {trip_currency}."
         )
 
     if llm:
@@ -91,7 +110,7 @@ def budget_agent_node(state: TripState) -> dict:
             ]
 
             # Tool-calling loop
-            for _ in range(4):  # max iterations
+            for _ in range(4):
                 response = llm_with_tools.invoke(messages)
                 messages.append(response)
 
@@ -115,16 +134,19 @@ def budget_agent_node(state: TripState) -> dict:
             summary = parsed.get("expenses_summary", {})
             if summary.get("remaining_budget") is not None:
                 remaining = summary["remaining_budget"]
-            recommendations.extend(parsed.get("recommendations", []))
+            if not new_expense and not budget_update:
+                recommendations.extend(parsed.get("recommendations", []))
         except Exception as e:
             logger.error(f"[BudgetAgent] Error: {e}")
-            recommendations.extend(_direct_recommendations(total_budget, total_spent, remaining, trip))
+            if not new_expense and not budget_update:
+                recommendations.extend(_direct_recommendations(total_budget, total_spent, remaining, trip))
     else:
-        recommendations.extend(_direct_recommendations(total_budget, total_spent, remaining, trip))
+        if not new_expense and not budget_update:
+            recommendations.extend(_direct_recommendations(total_budget, total_spent, remaining, trip))
 
     result = {
         "trip": updated_trip,
-        "expenses": expenses,  # Include updated expenses list
+        "expenses": expenses,
         "remaining_budget": round(remaining, 2),
         "recommendations": state.get("recommendations", []) + recommendations,
         "current_agent_index": state.get("current_agent_index", 0) + 1,
@@ -136,8 +158,49 @@ def budget_agent_node(state: TripState) -> dict:
     return result
 
 
+def _save_expense_to_db(trip_id: str, category: str, amount: float, currency: str) -> str:
+    """Save an expense to the database."""
+    if not trip_id:
+        return ""
+    try:
+        db = SessionLocal()
+        expense = Expense(
+            trip_id=trip_id,
+            category=category,
+            amount=amount,
+            currency=currency,
+            description="Added via AI Assistant"
+        )
+        db.add(expense)
+        db.commit()
+        db.refresh(expense)
+        expense_id = expense.id
+        db.close()
+        logger.info(f"[BudgetAgent] Persisted expense {expense_id} to DB")
+        return expense_id
+    except Exception as e:
+        logger.error(f"[BudgetAgent] Failed to save expense to DB: {e}")
+        return ""
+
+
+def _update_trip_budget_db(trip_id: str, new_budget: float):
+    """Update trip budget in the database."""
+    if not trip_id:
+        return
+    try:
+        db = SessionLocal()
+        trip_obj = db.query(Trip).filter(Trip.id == trip_id).first()
+        if trip_obj:
+            trip_obj.budget = new_budget
+            db.commit()
+            logger.info(f"[BudgetAgent] Updated trip {trip_id} budget to {new_budget}")
+        db.close()
+    except Exception as e:
+        logger.error(f"[BudgetAgent] Failed to update trip budget in DB: {e}")
+
+
 def _direct_recommendations(total_budget, total_spent, remaining, trip) -> list:
-    recs = [f"Remaining budget: {remaining:.2f} {trip.get('currency', 'USD')}."]
+    recs = [f"Remaining budget: {remaining:,.2f} {trip.get('currency', 'USD')}."]
     if total_budget > 0:
         recs.append(f"Spent {(total_spent / total_budget * 100):.1f}% of total budget.")
     return recs

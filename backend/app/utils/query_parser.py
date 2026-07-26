@@ -23,7 +23,6 @@ AMENITY_KEYWORDS = {
                 "church", "churches", "mosque", "fort", "palace"],
 }
 
-# Phrases that indicate the user wants sightseeing / attractions (route to planning)
 SIGHTSEEING_KEYWORDS = [
     "places to see", "places to visit", "things to do", "things to see",
     "places i can see", "places i can visit", "places i can go",
@@ -48,7 +47,6 @@ ITINERARY_MODIFICATION_KEYWORDS = [
     "rather", "different", "amusement park", "theme park",
 ]
 
-# Patterns that indicate user wants to modify a specific day
 DAY_REFERENCE_PATTERN = re.compile(
     r"(?:day\s*\d+|last\s+day|first\s+day|final\s+day|" 
     r"morning|afternoon|evening|\bday\b)",
@@ -56,25 +54,25 @@ DAY_REFERENCE_PATTERN = re.compile(
 )
 
 BUDGET_KEYWORDS = [
-    "budget", "spent", "spending", "expense", "expenses", "cost", "costs",
+    "budget", "spent", "spending", "spend", "expense", "expenses", "cost", "costs",
     "how much left", "remaining", "daily allowance", "money left",
-    "afford", "enough", "finish", "complete", "paid", "add to expenses",
+    "afford", "enough", "finish", "complete", "paid", "add to expenses", "log expense",
 ]
 
 BUDGET_UPDATE_PATTERNS = [
-    r"(?:update|set|change|adjust|increase|decrease|raise|lower|reduce)\s+(?:my\s+)?(?:trip\s+)?budget\s+(?:to|at)\s+\$?([\d,]+(?:\.\d+)?)",
-    r"(?:budget)\s+(?:to|at)\s+\$?([\d,]+(?:\.\d+)?)",
-    r"\$?([\d,]+(?:\.\d+)?)\s+(?:as\s+)?(?:my\s+)?(?:new\s+)?budget",
-    r"(?:make\s+(?:my\s+)?budget\s+)(?:\$?)([\d,]+(?:\.\d+)?)",
-    r"(?:change\s+(?:my\s+)?budget\s+to\s+)(?:\$?)([\d,]+(?:\.\d+)?)",
+    r"(?:update|set|change|adjust|increase|decrease|raise|lower|reduce)\s+(?:my\s+)?(?:trip\s+)?budget\s+(?:to|at)\s+(?:[₹$€£¥]?)\s*([\d,]+(?:\.\d+)?)",
+    r"(?:budget)\s+(?:to|at)\s+(?:[₹$€£¥]?)\s*([\d,]+(?:\.\d+)?)",
+    r"(?:[₹$€£¥]?)\s*([\d,]+(?:\.\d+)?)\s+(?:as\s+)?(?:my\s+)?(?:new\s+)?budget",
 ]
 
-# Patterns for detecting expense creation (e.g., "spent 100 on food", "I spent ₹200000 on hotels")
+# Robust expense patterns supporting "spend", "spent", "paid", optional category, and amounts
 EXPENSE_PATTERNS = [
-    # "spent 150 dollars on dinner" / "paid ₹500 for taxi"
-    r"(?:spent|paid|cost|used)\s+(?:[₹$€£¥]?)\s*([\d,]+(?:\.\d+)?)\s*(?:dollars|euros|usd|eur|gbp|inr|rupees|bucks)?\s+(?:on|for)\s+(.+)",
-    # "add 200000 hotel expense" / "add 5000 to expenses for food"
-    r"(?:add|record|log)\s+(?:[₹$€£¥]?)\s*([\d,]+(?:\.\d+)?)\s*(?:dollars|euros|usd|eur|gbp|inr|rupees|bucks)?\s+(?:to\s+(?:my\s+)?expenses?\s+(?:for|on)\s+|(?:for|on)\s+|)(\S+.*?)(?:\s+(?:to|in)\s+(?:my\s+)?expenses?)?$",
+    # "spent 5000 inr on food" / "spend 5000 on hotels" / "paid 500 for taxi"
+    r"(?:spent|spend|spending|paid|pay|cost|used|logged|add)\s+(?:[₹$€£¥]?)\s*([\d,]+(?:\.\d+)?)\s*(?:dollars|euros|usd|eur|gbp|inr|rupees|rs|bucks)?\s+(?:on|for)\s+(.+)",
+    # "spend 5000" / "spent 5000 inr" / "i just spend 5000" / "update my budget i spent 5000"
+    r"(?:spent|spend|spending|paid|pay|cost|used)\s+(?:[₹$€£¥]?)\s*([\d,]+(?:\.\d+)?)\s*(?:dollars|euros|usd|eur|gbp|inr|rupees|rs|bucks)?",
+    # "add 200000 hotel expense" / "log 5000 for food"
+    r"(?:add|record|log)\s+(?:[₹$€£¥]?)\s*([\d,]+(?:\.\d+)?)\s*(?:dollars|euros|usd|eur|gbp|inr|rupees|rs|bucks)?\s+(?:to\s+(?:my\s+)?expenses?\s+(?:for|on)\s+|(?:for|on)\s+|)(\S+.*?)(?:\s+(?:to|in)\s+(?:my\s+)?expenses?)?$",
     # "hotels cost 200000" / "food was 5000"
     r"(\S+.*?)\s+(?:cost|was|were|came to)\s+(?:[₹$€£¥]?)\s*([\d,]+(?:\.\d+)?)",
 ]
@@ -163,21 +161,25 @@ def parse_budget_update(query: str) -> Optional[float]:
 
 
 def parse_expense(query: str) -> Optional[dict]:
-    """Parse expense from query like 'spent 100 on food' or 'paid 50 for taxi'."""
+    """Parse expense from query like 'spent 100 on food', 'spend 5000', or 'paid 50 for taxi'."""
     for i, pattern in enumerate(EXPENSE_PATTERNS):
         match = re.search(pattern, query, re.IGNORECASE)
         if match:
             try:
-                if i == 2:
+                if i == 1:
+                    # Single amount pattern (e.g. "I just spend 5000")
+                    amount = float(match.group(1).replace(",", ""))
+                    category = "General"
+                elif i == 3:
                     # Reversed pattern: category first, amount second
                     category = match.group(1).strip()
                     amount = float(match.group(2).replace(",", ""))
                 else:
                     amount = float(match.group(1).replace(",", ""))
-                    category = match.group(2).strip()
-                # Clean up category — remove trailing noise like "to my expenses"
-                category = re.sub(r'\s+to\s+(?:my\s+)?expenses?.*$', '', category, flags=re.IGNORECASE)
-                # Normalize common categories
+                    category = match.group(2).strip() if len(match.groups()) > 1 and match.group(2) else "General"
+                
+                # Clean up category text
+                category = re.sub(r'\s+(?:to|in|update|my|budget).*$', '', category, flags=re.IGNORECASE)
                 category = _normalize_category(category)
                 return {"amount": amount, "category": category}
             except (ValueError, IndexError):
@@ -187,8 +189,9 @@ def parse_expense(query: str) -> Optional[dict]:
 
 def _normalize_category(raw: str) -> str:
     """Normalize free-form category text to a clean category name."""
+    if not raw or not raw.strip():
+        return "General"
     raw_lower = raw.lower().strip()
-    # Map common phrases to clean category names
     category_map = {
         "hotel": "Hotels", "hotels": "Hotels", "accommodation": "Hotels",
         "stay": "Hotels", "room": "Hotels", "lodging": "Hotels",
@@ -201,9 +204,7 @@ def _normalize_category(raw: str) -> str:
         "tickets": "Activities", "entry": "Activities", "tour": "Activities",
         "activities": "Activities", "sightseeing": "Activities",
     }
-    # Check if raw starts with a known keyword
     first_word = raw_lower.split()[0] if raw_lower else raw_lower
     if first_word in category_map:
         return category_map[first_word]
-    # Return cleaned-up version with title case
     return raw.strip().title()
