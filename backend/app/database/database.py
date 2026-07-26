@@ -5,11 +5,21 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Replace direct 5432 IPv6 host with Supabase Transaction Pooler if needed
-db_url = settings.DATABASE_URL
-if db_url and "supabase.co:5432" in db_url:
-    # Convert direct port 5432 to IPv4 pooler port 6543 for cloud hosts like Render
-    db_url = db_url.replace(":5432/", ":6543/")
+db_url = settings.DATABASE_URL or ""
+
+# Convert direct Supabase IPv6 domain to Supabase IPv4 Pooler if on direct host
+if "db." in db_url and ".supabase.co" in db_url:
+    # Extract project ref (e.g. xqinlmkptgluubdvjscq)
+    try:
+        ref = db_url.split("db.")[1].split(".supabase.co")[0]
+        # Check if user string is formatted as postgres:pass@db.ref...
+        if "@db." in db_url:
+            user_pass = db_url.split("@db.")[0].split("://")[1]
+            if "." not in user_pass.split(":")[0]:
+                user_pass = f"postgres.{ref}:{user_pass.split(':', 1)[1]}" if ":" in user_pass else user_pass
+            db_url = f"postgresql+psycopg2://{user_pass}@aws-0-ap-south-1.pooler.supabase.com:6543/postgres"
+    except Exception as e:
+        logger.warning(f"Could not convert Supabase URL to pooler: {e}")
 
 engine = create_engine(
     db_url,
