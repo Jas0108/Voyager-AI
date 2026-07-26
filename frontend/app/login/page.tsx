@@ -37,7 +37,8 @@ function LoginForm() {
       toast.success(isSignup ? "Account created!" : "Welcome back!");
       router.push("/dashboard");
     } catch (err: any) {
-      toast.error(err.response?.data?.detail || "Something went wrong.");
+      const msg = err.response?.data?.detail || err.message || "Failed to connect to backend.";
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

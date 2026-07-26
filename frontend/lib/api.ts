@@ -1,9 +1,13 @@
 import axios from "axios";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+// Clean trailing slash from base URL if present
+let rawBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+if (rawBase.endsWith("/")) {
+  rawBase = rawBase.slice(0, -1);
+}
 
 const api = axios.create({
-  baseURL: API_BASE,
+  baseURL: rawBase,
   headers: { "Content-Type": "application/json" },
 });
 
@@ -23,9 +27,12 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401 && typeof window !== "undefined") {
-      localStorage.removeItem("voyager_token");
-      localStorage.removeItem("voyager_user");
-      window.location.href = "/login";
+      // Don't auto-redirect if already on login/signup page
+      if (!window.location.pathname.startsWith("/login")) {
+        localStorage.removeItem("voyager_token");
+        localStorage.removeItem("voyager_user");
+        window.location.href = "/login";
+      }
     }
     return Promise.reject(error);
   }
