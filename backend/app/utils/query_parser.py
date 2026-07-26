@@ -59,17 +59,20 @@ BUDGET_KEYWORDS = [
     "afford", "enough", "finish", "complete", "paid", "add to expenses", "log expense",
 ]
 
+# Patterns specifically for updating the overall total trip budget (must explicitly mention budget to/at/set to X)
 BUDGET_UPDATE_PATTERNS = [
-    r"(?:update|set|change|adjust|increase|decrease|raise|lower|reduce)\s+(?:my\s+)?(?:trip\s+)?budget\s+(?:to|at)\s+(?:[₹$€£¥]?)\s*([\d,]+(?:\.\d+)?)",
-    r"(?:budget)\s+(?:to|at)\s+(?:[₹$€£¥]?)\s*([\d,]+(?:\.\d+)?)",
-    r"(?:[₹$€£¥]?)\s*([\d,]+(?:\.\d+)?)\s+(?:as\s+)?(?:my\s+)?(?:new\s+)?budget",
+    r"(?:update|set|change|adjust|increase|decrease|raise|lower|reduce)\s+(?:my\s+)?(?:trip\s+)?budget\s+(?:to|at|=)\s+(?:[₹$€£¥]?)\s*([\d,]+(?:\.\d+)?)",
+    r"(?:total\s+budget)\s+(?:to|at|=)\s+(?:[₹$€£¥]?)\s*([\d,]+(?:\.\d+)?)",
+    r"(?:make\s+(?:my\s+)?budget)\s+(?:[₹$€£¥]?)\s*([\d,]+(?:\.\d+)?)",
 ]
 
-# Robust expense patterns supporting "spend", "spent", "paid", optional category, and amounts
+# Robust expense patterns supporting "5000 on club", "spent 5000 inr on food", "spend 100", etc.
 EXPENSE_PATTERNS = [
+    # "5000 on club, update my budget" / "5000 inr on food"
+    r"(?:[₹$€£¥]?)\s*([\d,]+(?:\.\d+)?)\s*(?:dollars|euros|usd|eur|gbp|inr|rupees|rs|bucks)?\s+(?:on|for)\s+(.+)",
     # "spent 5000 inr on food" / "spend 5000 on hotels" / "paid 500 for taxi"
     r"(?:spent|spend|spending|paid|pay|cost|used|logged|add)\s+(?:[₹$€£¥]?)\s*([\d,]+(?:\.\d+)?)\s*(?:dollars|euros|usd|eur|gbp|inr|rupees|rs|bucks)?\s+(?:on|for)\s+(.+)",
-    # "spend 5000" / "spent 5000 inr" / "i just spend 5000" / "update my budget i spent 5000"
+    # "spend 5000" / "spent 5000 inr" / "i just spend 5000"
     r"(?:spent|spend|spending|paid|pay|cost|used)\s+(?:[₹$€£¥]?)\s*([\d,]+(?:\.\d+)?)\s*(?:dollars|euros|usd|eur|gbp|inr|rupees|rs|bucks)?",
     # "add 200000 hotel expense" / "log 5000 for food"
     r"(?:add|record|log)\s+(?:[₹$€£¥]?)\s*([\d,]+(?:\.\d+)?)\s*(?:dollars|euros|usd|eur|gbp|inr|rupees|rs|bucks)?\s+(?:to\s+(?:my\s+)?expenses?\s+(?:for|on)\s+|(?:for|on)\s+|)(\S+.*?)(?:\s+(?:to|in)\s+(?:my\s+)?expenses?)?$",
@@ -93,7 +96,6 @@ def detect_amenities(query: str) -> List[str]:
 
 
 def is_sightseeing_query(query: str) -> bool:
-    """Check if the user is asking about places to see/visit (attractions)."""
     return any(k in query.lower() for k in SIGHTSEEING_KEYWORDS)
 
 
@@ -113,7 +115,6 @@ def is_itinerary_query(query: str) -> bool:
 
 
 def is_itinerary_modification_query(query: str) -> bool:
-    """Check if the user wants to modify a specific part of an existing itinerary."""
     text = query.lower()
     has_day_ref = bool(DAY_REFERENCE_PATTERN.search(text))
     has_modification_word = _contains_keyword(text, ITINERARY_MODIFICATION_KEYWORDS)
@@ -144,12 +145,15 @@ def is_discovery_query(query: str, conversation_history: Optional[List[dict]] = 
 
 
 def is_budget_query(query: str) -> bool:
-    """Check if the user is asking about budget/expenses."""
     text = query.lower()
     return _contains_keyword(text, BUDGET_KEYWORDS)
 
 
 def parse_budget_update(query: str) -> Optional[float]:
+    # If the query contains "on [category]", it is an expense, NOT a budget update
+    if re.search(r"\b(?:on|for)\b\s+[a-zA-Z]", query, re.IGNORECASE):
+        return None
+
     for pattern in BUDGET_UPDATE_PATTERNS:
         match = re.search(pattern, query, re.IGNORECASE)
         if match:
@@ -161,25 +165,27 @@ def parse_budget_update(query: str) -> Optional[float]:
 
 
 def parse_expense(query: str) -> Optional[dict]:
-    """Parse expense from query like 'spent 100 on food', 'spend 5000', or 'paid 50 for taxi'."""
+    """Parse expense from query like '5000 on club, update my budget' or 'spent 100 on food'."""
     for i, pattern in enumerate(EXPENSE_PATTERNS):
         match = re.search(pattern, query, re.IGNORECASE)
         if match:
             try:
-                if i == 1:
-                    # Single amount pattern (e.g. "I just spend 5000")
+                if i == 2:
+                    # Single amount without explicit category
                     amount = float(match.group(1).replace(",", ""))
                     category = "General"
-                elif i == 3:
-                    # Reversed pattern: category first, amount second
+                elif i == 4:
+                    # Category first, amount second
                     category = match.group(1).strip()
                     amount = float(match.group(2).replace(",", ""))
                 else:
                     amount = float(match.group(1).replace(",", ""))
                     category = match.group(2).strip() if len(match.groups()) > 1 and match.group(2) else "General"
                 
-                # Clean up category text
-                category = re.sub(r'\s+(?:to|in|update|my|budget).*$', '', category, flags=re.IGNORECASE)
+                # Strip trailing instruction noise like ", update my budget", "update budget", etc.
+                category = re.sub(r'[,.]?\s*(?:and\s+)?(?:please\s+)?(?:update|set|change|add|recalculate)\s+(?:my\s+)?(?:trip\s+)?(?:budget|expenses?).*$', '', category, flags=re.IGNORECASE)
+                category = category.strip(" ,.")
+                
                 category = _normalize_category(category)
                 return {"amount": amount, "category": category}
             except (ValueError, IndexError):
@@ -193,16 +199,12 @@ def _normalize_category(raw: str) -> str:
         return "General"
     raw_lower = raw.lower().strip()
     category_map = {
-        "hotel": "Hotels", "hotels": "Hotels", "accommodation": "Hotels",
-        "stay": "Hotels", "room": "Hotels", "lodging": "Hotels",
-        "food": "Food", "restaurant": "Food", "dining": "Food",
-        "lunch": "Food", "dinner": "Food", "breakfast": "Food", "meal": "Food", "meals": "Food",
-        "taxi": "Transport", "cab": "Transport", "uber": "Transport",
-        "transport": "Transport", "transportation": "Transport", "bus": "Transport",
-        "train": "Transport", "flight": "Transport", "flights": "Transport",
-        "shopping": "Shopping", "souvenirs": "Shopping", "gifts": "Shopping",
-        "tickets": "Activities", "entry": "Activities", "tour": "Activities",
-        "activities": "Activities", "sightseeing": "Activities",
+        "club": "Nightlife & Clubs", "clubs": "Nightlife & Clubs", "clubbing": "Nightlife & Clubs", "pub": "Nightlife & Clubs", "bar": "Nightlife & Clubs",
+        "hotel": "Hotels", "hotels": "Hotels", "accommodation": "Hotels", "stay": "Hotels", "room": "Hotels",
+        "food": "Food & Dining", "restaurant": "Food & Dining", "dining": "Food & Dining", "lunch": "Food & Dining", "dinner": "Food & Dining",
+        "taxi": "Transport", "cab": "Transport", "uber": "Transport", "transport": "Transport",
+        "shopping": "Shopping", "souvenirs": "Shopping",
+        "tickets": "Activities", "tour": "Activities", "activities": "Activities",
     }
     first_word = raw_lower.split()[0] if raw_lower else raw_lower
     if first_word in category_map:

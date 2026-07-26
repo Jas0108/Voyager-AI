@@ -20,7 +20,6 @@ def _build_context(state: TripState) -> str:
     active = state.get("active_location") or trip.get("destination")
     trip_dest = trip.get("destination")
 
-    # Include recent conversation history for continuity
     history = state.get("conversation_history", [])
     recent_history = [
         {"role": m["role"], "content": m["content"]}
@@ -28,7 +27,6 @@ def _build_context(state: TripState) -> str:
     ] if history else []
 
     context = {
-        # Put CURRENT destination front-and-center so the LLM never confuses it
         "CURRENT_DESTINATION": active,
         "user_query": state.get("user_query"),
         "active_location": active,
@@ -36,7 +34,6 @@ def _build_context(state: TripState) -> str:
         "conversation_history": recent_history,
     }
 
-    # Only include data from agents that actually ran
     if "planning" in execution_plan:
         weather = state.get("weather")
         if weather:
@@ -48,7 +45,7 @@ def _build_context(state: TripState) -> str:
 
         itinerary = state.get("itinerary")
         if itinerary:
-            context["itinerary"] = itinerary[:14]  # Pass full itinerary (cap at 14 days to avoid token overflow)
+            context["itinerary"] = itinerary[:14]
 
     if "discovery" in execution_plan:
         places = state.get("nearby_places") or []
@@ -69,13 +66,12 @@ def _build_context(state: TripState) -> str:
         context["currency"] = trip.get("currency", "USD")
         context["remaining_budget"] = state.get("remaining_budget")
         context["budget_updated"] = state.get("budget_update")
-        # Include itinerary summary for budget+itinerary queries
+        context["new_expense"] = state.get("new_expense")
         itinerary = state.get("itinerary")
         if itinerary:
             context["itinerary_destination"] = active
             context["itinerary_days"] = len(itinerary)
 
-    # Only include recommendations if they exist
     recs = state.get("recommendations") or []
     if recs:
         context["recommendations"] = recs[:5]
@@ -83,65 +79,57 @@ def _build_context(state: TripState) -> str:
     return json.dumps(context, indent=2, default=str)
 
 
-
 def _fallback_response(state: TripState) -> str:
-    """Generate a fallback response when LLM is unavailable."""
+    """Generate a warm, conversational fallback response."""
     parts = []
-    query = state.get("user_query", "")
     execution_plan = state.get("execution_plan", [])
+    trip = state.get("trip", {})
+    currency = trip.get("currency", "USD")
+
+    if "budget" in execution_plan:
+        if new_exp := state.get("new_expense"):
+            rem = state.get("remaining_budget", 0)
+            parts.append(
+                f"I've logged your expense of {new_exp['amount']:,.2f} {currency} for {new_exp['category']}! "
+                f"Your updated remaining budget is {rem:,.2f} {currency}."
+            )
+        elif budget_upd := state.get("budget_update"):
+            rem = state.get("remaining_budget", 0)
+            parts.append(
+                f"Got it! I've updated your total trip budget to {budget_upd:,.2f} {currency}. "
+                f"Your new remaining balance is {rem:,.2f} {currency}."
+            )
+        elif rem := state.get("remaining_budget"):
+            parts.append(f"Your current remaining budget is {rem:,.2f} {currency}.")
 
     if "planning" in execution_plan:
         if weather := state.get("weather"):
             current = weather.get("current", {})
             if current and not current.get("error"):
                 parts.append(
-                    f"Weather in {current.get('destination', 'your destination')}: "
-                    f"{current.get('description', 'N/A')}, {current.get('temperature', 'N/A')}°C "
-                    f"(feels like {current.get('feels_like', 'N/A')}°C)."
-                )
-            forecast = weather.get("forecast", {})
-            if forecasts := forecast.get("forecast", []):
-                upcoming = forecasts[:3]
-                parts.append(
-                    "Upcoming: "
-                    + "; ".join(f"{f['datetime']}: {f['description']}, {f['temp']}°C" for f in upcoming)
+                    f"Weather update for {current.get('destination', 'your destination')}: "
+                    f"{current.get('description', 'N/A')}, {current.get('temperature', 'N/A')}°C."
                 )
 
         if itinerary := state.get("itinerary"):
-            parts.append(f"I've put together a {len(itinerary)}-day itinerary for you.")
+            parts.append(f"I've updated your {len(itinerary)}-day itinerary.")
 
     if "discovery" in execution_plan:
         if places := state.get("nearby_places"):
             loc = state.get("active_location") or state.get("trip", {}).get("destination", "your area")
             listing = "\n".join(
-                f"- {p.get('name', 'Unknown')} ({p.get('type', p.get('amenity', 'place'))})"
+                f"• {p.get('name', 'Unknown')} ({p.get('type', p.get('amenity', 'place'))})"
                 + (f" — {p.get('address')}" if p.get("address") else "")
-                for p in places[:10]
+                for p in places[:6]
             )
-            parts.append(f"Here are some places near {loc}:\n{listing}")
-        else:
-            parts.append("I couldn't find any places matching your search. Try being more specific with the location.")
-
-    if "budget" in execution_plan:
-        if state.get("budget_update"):
-            trip = state.get("trip", {})
-            parts.append(
-                f"Done! Your budget is now "
-                f"{state['budget_update']:.2f} {trip.get('currency', 'USD')}."
-            )
-
-        if state.get("remaining_budget") is not None:
-            trip = state.get("trip", {})
-            parts.append(
-                f"Remaining budget: {state['remaining_budget']:.2f} {trip.get('currency', 'USD')}."
-            )
+            parts.append(f"Here are some great spots near {loc}:\n{listing}")
 
     if parts:
         return " ".join(parts)
 
     return (
-        "I'm here to help! You can ask me to find restaurants or places nearby, "
-        "check the weather, plan your itinerary, or manage your budget."
+        "I'm Voyager AI, your travel assistant! Let me know if you want to add an expense, "
+        "adjust your budget, check the weather, or discover great spots nearby."
     )
 
 
@@ -153,7 +141,6 @@ def _generate_insights(state: TripState) -> dict:
     weather = weather_data.get("current", {}) or {}
     itinerary = state.get("itinerary", []) or []
     
-    # 1. Budget Status
     if trip.get("budget"):
         total_budget = trip.get("budget")
         total_spent = sum(e.get("amount", 0) for e in expenses)
@@ -169,7 +156,6 @@ def _generate_insights(state: TripState) -> dict:
             else:
                 insights["Budget Status"] = f"Healthy: {remaining} {trip.get('currency', 'USD')} remaining."
 
-    # 2. Expense Breakdown
     if expenses:
         categories = {}
         for e in expenses:
@@ -178,26 +164,17 @@ def _generate_insights(state: TripState) -> dict:
         top_cat = max(categories.items(), key=lambda x: x[1])
         insights["Expense Breakdown"] = f"Highest spending on {top_cat[0]} ({top_cat[1]} {trip.get('currency', 'USD')})."
 
-    # 3. Weather Alerts
     if weather and not weather.get("error"):
         desc = weather.get("description", "").lower()
         if "rain" in desc or "storm" in desc:
-            insights["Weather Alerts"] = f"Rain expected ({desc}). Carry an umbrella and plan indoor activities."
+            insights["Weather Alerts"] = f"Rain expected ({desc}). Carry an umbrella."
         elif "snow" in desc:
             insights["Weather Alerts"] = "Snow expected. Dress warmly."
         elif weather.get("temperature", 0) > 30:
             insights["Weather Alerts"] = "High temperatures. Stay hydrated."
-        else:
-            insights["Weather Alerts"] = "Weather looks good for outdoor activities."
 
-    # 4. Trip Progress
     if itinerary:
         insights["Trip Progress"] = f"Itinerary planned for {len(itinerary)} days."
-
-    # 5. Recommendation Summary
-    recs = state.get("recommendations", [])
-    if recs:
-        insights["Recommendation Summary"] = f"Generated {len(recs)} new recommendations."
 
     return insights
 
@@ -210,9 +187,7 @@ def synthesizer_node(state: TripState) -> dict:
 
     logger.info("[Synthesizer] Generating final response")
     
-    # Generate insights from state
     insights = _generate_insights(state)
-    
     context = _build_context(state)
     if insights:
         context = context[:-1] + f',\n  "insights": {json.dumps(insights)}\n}}'
