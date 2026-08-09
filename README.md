@@ -4,6 +4,7 @@ Voyager AI is a multi-agent travel assistant. You describe your trip by just hav
 
 It runs on a **Supervisor-Worker** pipeline built with **LangGraph**. When you send a message, a Supervisor agent analyses your intent and decides which specialist agents to run: Planning, Discovery, or Budget. Those agents execute in sequence, and a Synthesizer combines their outputs into one clean response. No manual tool selection, no switching between views.
 
+Demo: https://voyager-ai-sigma.vercel.app/
 
 ## What It Does
 
